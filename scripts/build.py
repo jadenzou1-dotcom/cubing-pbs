@@ -702,24 +702,6 @@ def readme(history, n_fast=0):
             rc = "✓" if r["recon"] else ""
             L.append(f"| {r['date']} | {t} | {imp} | {sd} | {rc} | [details]({r['page']}) |")
         L.append("")
-    L += ["## Adding a new PB", "",
-          "1. Save the solves as `records/<event>/YYYY-MM-DD.txt` "
-          "(`<event>` is `single`, `ao5`, `ao12`, `ao25`, `ao50` or `ao100`). "
-          "A second PB of the same event on the same day is `YYYY-MM-DD_2.txt`, then `_3`, … "
-          "Paste the csTimer export as-is — header and all.",
-          "2. Run `python3 scripts/build.py`.",
-          "3. `git add -A && git commit -m \"ao5 PB 12.80\" && git push`.", "",
-          "The new record goes to the top of its history and the README updates itself.", "",
-          "### Reconstructions (optional)", "",
-          "Put `>` lines directly under any numbered solve. `//` starts a comment:", "",
-          "```",
-          "1. 9.90   R2 B2 L2 F D2 B L2 F2 L2 F' D2 R2 L D' F' D U2 L D' F'",
-          "> z2 // inspection",
-          "> D R' F D' // cross",
-          "> U R U' R' // F2L 1",
-          "```", "",
-          "The details page then shows the move count, TPS, and an alg.cubing.net link "
-          "that replays the solve.", ""]
     return "\n".join(L)
 
 
