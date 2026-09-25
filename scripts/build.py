@@ -214,10 +214,6 @@ def plot_distribution(event, day, times, trimmed, avg, st, out):
     allt = np.array(counted + cut)
 
     n = len(times)
-    width = 0.25 if n <= 5 else 0.5
-    lo = math.floor(allt.min() / width) * width
-    hi = math.ceil(allt.max() / width) * width + width
-    bins = np.arange(lo, hi + 1e-9, width)
 
     fig, (ax, axb) = plt.subplots(
         2, 1, figsize=(9, 5.4), sharex=True,
@@ -225,18 +221,29 @@ def plot_distribution(event, day, times, trimmed, avg, st, out):
     )
     fig.patch.set_facecolor(SURFACE)
     style_axes(ax)
-    ax.hist([counted, cut], bins=bins, stacked=True, color=[COUNTED, TRIMMED],
-            edgecolor=SURFACE, linewidth=1.5,
-            label=["Counted solves", f"Trimmed (best/worst {trim_count(n)})"])
 
-    xs = np.linspace(lo, hi, 400)
-    scale = len(allt) * width  # density -> count per bin
-    ax.plot(xs, sps.norm.pdf(xs, st["mean"], st["std"]) * scale,
-            color=FIT, linewidth=2, label=f"Normal fit (μ={st['mean']:.2f}, σ={st['std']:.2f})")
-    if len(allt) >= 12:
-        kde = sps.gaussian_kde(allt)
-        ax.plot(xs, kde(xs) * scale, color=ACCENT, linewidth=2, linestyle="--",
-                label="Smoothed shape (KDE)")
+    # Continuous estimate of the distribution: a Gaussian KDE, scaled so the
+    # y-axis reads as "solves per second of time" (area under the curve = n).
+    # Bandwidth is 0.6x Scott's rule so real clusters aren't smoothed away.
+    kde = sps.gaussian_kde(allt)
+    kde.set_bandwidth(kde.factor * 0.6)
+    bw = kde.factor * allt.std(ddof=1)
+    lo, hi = allt.min() - 3 * bw, allt.max() + 3 * bw  # room for the full tails
+    xs = np.linspace(lo, hi, 800)
+    dens = kde(xs) * len(allt)
+    ax.fill_between(xs, dens, color=COUNTED, alpha=0.18, linewidth=0)
+    ax.plot(xs, dens, color=COUNTED, linewidth=2,
+            label=f"Density of your times (bandwidth {bw:.2f}s)")
+    ax.plot(xs, sps.norm.pdf(xs, st["mean"], st["std"]) * len(allt), color=FIT,
+            linewidth=1.6, linestyle="--",
+            label=f"Normal fit (μ={st['mean']:.2f}, σ={st['std']:.2f})")
+
+    # Rug: one thin tick per solve at its exact time.
+    rug_h = dens.max() * 0.07
+    ax.vlines(counted, 0, rug_h, color=COUNTED, linewidth=1, label="One tick per solve")
+    ax.vlines(cut, 0, rug_h, color=TRIMMED, linewidth=1,
+              label=f"Trimmed (best/worst {trim_count(n)})")
+    ax.set_ylim(bottom=0)
 
     ax.axvline(avg, color=INK, linewidth=1.2)
     ax.axvline(st["median"], color=INK, linewidth=1.2, linestyle=":")
@@ -250,8 +257,7 @@ def plot_distribution(event, day, times, trimmed, avg, st, out):
     ax.text(st["median"], ymax * 0.98, f" median {fmt(st['median'])} ", color=INK_2,
             fontsize=9, va="top", ha="right" if avg_right else "left")
 
-    ax.set_ylabel("Solves", color=INK_2)
-    ax.yaxis.get_major_locator().set_params(integer=True)
+    ax.set_ylabel("Solves per second", color=INK_2)
     ax.set_title(f"{event} PB · {fmt(avg)} · {day}", loc="left", color=INK,
                  fontsize=13, fontweight="bold", pad=52)
     ax.legend(frameon=False, fontsize=8.5, labelcolor=INK_2, loc="lower left",
