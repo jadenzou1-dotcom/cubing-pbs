@@ -182,7 +182,8 @@ def analyze_recon(recon):
         "stm": stm, "rotations": rotations, "etm": stm + rotations,
         "cross": by("Cross"), "f2l_pairs_moves": by("F2L"), "pairs": pairs,
         "f2l": f2l, "ll": sum(by(c) for c in LL_STEPS),
-        "per_pair": (by("F2L") / pairs) if pairs else None,
+        # pairs solved in their own step (not inside an x/xxcross)
+        "per_pair": (by("F2L") / (pairs - xcross)) if pairs - xcross else None,
         "skips": skips, "steps": steps, "xcross": xcross,
         "labelled": any(st["cat"] != "Other" for st in steps),
     }
