@@ -13,6 +13,8 @@
 | Median | 14.32 |
 | Std dev (σ, all solves) | 2.60 |
 | Std dev (σ, counted solves only) | 1.48 |
+| **Consistency: σ / mean** | **17.6%** |
+| Consistency, outlier-proof: IQR / median | 11.4% |
 | Min / Best | 12.35 |
 | Q1 (25th pct) | 13.17 |
 | Q3 (75th pct) | 14.79 |
