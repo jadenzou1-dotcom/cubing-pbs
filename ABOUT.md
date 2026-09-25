@@ -10,7 +10,8 @@ A record of my 3x3 personal bests, plus the solve data behind each one, so I can
 |---|---|
 | [`README.md`](README.md) | My current PBs, the improvement on each, and the full PB history. Generated. |
 | `ABOUT.md` | This file. Written by hand. |
-| `CLAUDE.md` | Instructions for Claude so a new chat can add PBs and run the workflow. Written by hand. |
+| `INSTRUCTIONS_FOR_CLAUDE.md` | How Claude should add PBs, check reconstructions and keep these docs current, so any new chat can run the workflow. Written by hand. |
+| `CLAUDE.md` | One line that loads the file above (Claude Code only auto-reads this exact name). |
 | `records/<event>/` | **The raw data.** One `.txt` file per PB, for `single`, `ao5`, `ao12`, `ao25`, `ao50` and `ao100`. |
 | `stats/<event>/<date>/` | **Generated analysis** for each PB: stats page, two charts, and a JSON copy of the numbers. |
 | `stats/progression.png` | The PB value for each event over time. |
@@ -21,7 +22,15 @@ The `.txt` files are the source of truth. Everything else can be deleted and reb
 
 ## Records
 
-Each file is a csTimer export: solve times with their scrambles. Names are `YYYY-MM-DD.txt`; a second PB of the same event on the same day is `YYYY-MM-DD_2.txt`, then `_3`, in the order they happened. A new PB is always a **new file**, so old records stay and become history. Optional reconstructions (`>` lines under a solve) are added for solves I want to break down move by move.
+Each file is a csTimer export: solve times with their scrambles. Names are `YYYY-MM-DD.txt`; a second PB of the same event on the same day is `YYYY-MM-DD_2.txt`, then `_3`, in the order they happened. A new PB is always a **new file**, so old records stay and become history.
+
+## Reconstructions
+
+For solves I want to break down move by move, I add a reconstruction: one line per step (inspection, cross, each F2L pair, OLL, PLL), with algorithms in brackets and AUFs outside them. Every reconstruction is checked on a cube simulator before it's committed, so it really solves the scramble. Wherever a reconstruction appears, it comes with:
+
+- a **▶ play on alg.cubing.net** link that replays the solve from the scramble, move by move
+- **move count** (STM: each face turn or slice counts as one), **TPS** (moves per second), **cube rotations**, and **ETM** (moves plus rotations)
+- a one-line **breakdown**: moves in the cross, total F2L moves and moves per pair, moves in the last layer, and any OLL/PLL skips
 
 ## What the stats page for each PB contains
 
@@ -30,7 +39,7 @@ Each file is a csTimer export: solve times with their scrambles. Names are `YYYY
 - **Consistency**, described below.
 - **Shape:** skewness (a positive value means a tail of slow solves) and a Shapiro–Wilk p-value (below 0.05 means the times are unlikely to be normally distributed).
 - **Sub-X counts:** how many solves were under 12, 13, 14, and so on.
-- **Every solve,** with trimmed ones in (parentheses), and reconstructions if I added them.
+- **Every solve,** with its scramble, trimmed ones in (parentheses), and reconstructions if I added them.
 
 ## The two charts
 
@@ -50,12 +59,12 @@ Two cautions:
 - Compare consistency *within the same event*. An ao5 has only 5 solves, so its σ is noisy: one bad solve can swing it from 8% to 16%.
 - σ / mean is not the same as speed. A lower percentage means steadier, not faster.
 
-Over time, watching this number in the PB history shows whether new PBs are also getting more consistent, or just faster.
+Both appear on every stats page, and σ / mean is also a column in the README's PB history. Over time, watching it there shows whether new PBs are also getting more consistent, or just faster.
 
 ## Fast solve bank
 
-`fast-solves/` holds individual solves I want to keep, with the scramble, time, date and a reconstruction. It's not part of any average, so it has no distributions. The bank's page summarizes move count (STM), turns per second (TPS), cube rotations, moves per F2L pair, and moves in the cross and the last layer.
+`fast-solves/` holds individual solves I want to keep, with the scramble, time, date and a reconstruction. It's not part of any average, so it has no distributions. Each solve has the full reconstruction and replay link described above. The top of the bank's page summarizes the whole bank: mean time, mean and fewest moves, mean and highest TPS, mean rotations, and average moves in the cross, per F2L pair and in the last layer.
 
 ## How to add a PB
 
-New PBs go through Claude: paste the csTimer export into a chat opened in this folder. Claude saves the record, runs `scripts/build.py`, checks any reconstruction on a cube simulator, and pushes. The steps are in `CLAUDE.md`.
+New PBs go through Claude: paste the csTimer export into a chat opened in this folder. Claude saves the record, runs `scripts/build.py`, checks any reconstruction on a cube simulator, and pushes. The steps are in `INSTRUCTIONS_FOR_CLAUDE.md`.
