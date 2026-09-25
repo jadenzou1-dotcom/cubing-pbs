@@ -197,6 +197,26 @@ def fmt(t):
 
 # ---------------------------------------------------------------- charts
 
+def time_grid(axes, lo, hi, which="x"):
+    """Gridlines on the time axis: solid + labeled every second, plus dotted
+    half-seconds when the times are close together (span <= 6 s), labeled too
+    when very close (span <= 4 s)."""
+    import matplotlib.ticker as mt
+    span = hi - lo
+    for ax in axes:
+        axis = ax.xaxis if which == "x" else ax.yaxis
+        axis.set_major_locator(mt.MultipleLocator(1))
+        axis.set_major_formatter(mt.FormatStrFormatter("%d"))
+        ax.grid(axis=which, which="major", color=GRID, linewidth=0.9, linestyle="-")
+        if span <= 6:
+            axis.set_minor_locator(mt.MultipleLocator(0.5))
+            ax.grid(axis=which, which="minor", color=GRID, linewidth=0.9, linestyle=(0, (2, 3)))
+            if span <= 4:
+                axis.set_minor_formatter(mt.FormatStrFormatter("%.1f"))
+                ax.tick_params(axis=which, which="minor", labelsize=7.5, labelcolor=INK_2)
+        ax.set_axisbelow(True)
+
+
 def style_axes(ax):
     ax.set_facecolor(SURFACE)
     for side in ("top", "right"):
@@ -258,7 +278,7 @@ def plot_distribution(event, day, times, trimmed, avg, st, out, solves=None):
     ax.text(st["median"], ymax * 0.98, f" median {fmt(st['median'])} ", color=INK_2,
             fontsize=9, va="top", ha="right" if avg_right else "left")
 
-    ax.set_ylabel("Solves per second", color=INK_2)
+    ax.set_ylabel("Solves within a 1-second window", color=INK_2)
     ax.set_title(f"{event} PB · {fmt(avg)} · {day}", loc="left", color=INK,
                  fontsize=13, fontweight="bold", pad=52)
     ax.legend(frameon=False, fontsize=8.5, labelcolor=INK_2, loc="lower left",
@@ -267,6 +287,8 @@ def plot_distribution(event, day, times, trimmed, avg, st, out, solves=None):
     # Box plot + every solve as a dot underneath, same x-axis.
     style_axes(axb)
     axb.grid(False)
+    time_grid([ax, axb], allt.min(), allt.max())
+    ax.set_xlim(lo, hi)
     axb.boxplot(allt, orientation="horizontal", widths=0.55, patch_artist=True, showfliers=False,
                 boxprops={"facecolor": "#dbe8f8", "edgecolor": COUNTED},
                 medianprops={"color": INK, "linewidth": 1.5},
@@ -358,9 +380,10 @@ def plot_numberline(event, day, times, trimmed, avg, st, out, solves=None):
                 fontweight="bold" if col == INK else "normal")
     ytop = 0.35 + top * 0.9 + 0.6
     ax.set_ylim(base - 0.75, ytop)
+    time_grid([ax, axb], allt.min(), allt.max())
     ax.set_xlim(lo, hi)
     ax.spines["bottom"].set_visible(False)
-    ax.tick_params(axis="x", length=0)
+    ax.tick_params(axis="x", which="both", length=0, labelbottom=False)
 
     ax.set_title(f"{event} PB · {fmt(avg)} · {day}", loc="left", color=INK,
                  fontsize=13, fontweight="bold", pad=30)
@@ -407,11 +430,15 @@ def plot_sequence(event, day, times, trimmed, avg, out):
     ax.axhline(avg, color=INK, linewidth=1, linestyle="--")
     ax.text(n + 0.5, avg, f" {event}\n {fmt(avg)}", color=INK, fontsize=8.5, va="center")
     ax.set_xlim(0.5, n + 0.5)
+    fin = y[np.isfinite(y)]
+    time_grid([ax], fin.min(), fin.max(), which="y")
     ax.set_xlabel("Solve #", color=INK_2)
     ax.set_ylabel("Time (s)", color=INK_2)
+    ax.margins(y=0.08)
     ax.set_title(f"{event} · solves in order", loc="left", color=INK, fontsize=12,
-                 fontweight="bold")
-    ax.legend(frameon=False, fontsize=8.5, labelcolor=INK_2, loc="upper left", ncol=2)
+                 fontweight="bold", pad=26)
+    ax.legend(frameon=False, fontsize=8.5, labelcolor=INK_2, loc="lower left",
+              bbox_to_anchor=(0, 1.0), ncol=2)
     fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=SURFACE)
     plt.close(fig)
 
