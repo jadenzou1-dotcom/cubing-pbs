@@ -200,11 +200,6 @@ def recon_block(s, heading):
          "| Moves (STM) | TPS | Rotations | ETM |", "|---|---|---|---|",
          f"| **{a['stm']}** | **{tps}** | {a['rotations']} | {a['etm']} |", ""]
     if a["labelled"]:
-        L += ["| Step | Moves | Share |", "|---|---|---|"]
-        for st in a["steps"]:
-            if st["moves"] or st["cat"] != "Inspection":
-                share = f"{100 * st['moves'] / a['stm']:.0f}%" if a["stm"] else "—"
-                L.append(f"| {st['name']} | {st['moves']} | {share} |")
         extra = [f"cross {a['cross']}"]
         if a["pairs"]:
             extra.append(f"F2L total {a['f2l']} ({a['pairs']} pairs"
@@ -212,7 +207,7 @@ def recon_block(s, heading):
         extra.append(f"last layer {a['ll']}")
         if a["skips"]:
             extra.append("skips: " + ", ".join(a["skips"]))
-        L += ["", "**Breakdown:** " + " · ".join(extra), ""]
+        L += ["**Breakdown:** " + " · ".join(extra), ""]
     L += ["```", *s["recon"], "```", ""]
     return L
 
@@ -676,21 +671,6 @@ def fast_solves_page():
             L += [f"> {n}" for n in notes] + ([""] if notes else [])
     else:
         L += ["_No fast solves yet._", ""]
-    L += ["## Adding one", "",
-          "Save `fast-solves/YYYY-MM-DD.txt` (`_2`, `_3` for more on the same day):", "",
-          "```",
-          "1. 8.42   R2 B2 L2 F D2 ...",
-          "> z2 // inspection",
-          "> D R' F D' // cross",
-          "> U R U' R' // pair 1",
-          "> ... // pair 2",
-          "> ... // OLL (Sune)",
-          "> ... // PLL (T)",
-          "# optional note, e.g. full-step, lucky F2L",
-          "```", "",
-          "Label steps in `//` comments with the words cross / xcross / pair (or f2l, slot) / "
-          "OLL / PLL / AUF / inspection, and the step breakdown fills in automatically. "
-          "Write \"skip\" in a comment to log a skip.", ""]
     return "\n".join(L), len(entries)
 
 

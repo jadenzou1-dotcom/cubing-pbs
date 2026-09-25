@@ -42,16 +42,6 @@
 |---|---|---|---|
 | **60** | **5.01** | 4 | 64 |
 
-| Step | Moves | Share |
-|---|---|---|
-| cross | 6 | 10% |
-| pair 1 (green-orange) | 7 | 12% |
-| pair 2 (blue-red) | 7 | 12% |
-| pair 3 (orange-blue) | 4 | 7% |
-| pair 4 (red-green) | 8 | 13% |
-| OLL | 11 | 18% |
-| PLL (Gb) | 17 | 28% |
-
 **Breakdown:** cross 6 · F2L total 32 (4 pairs, 6.5/pair) · last layer 28
 
 ```
