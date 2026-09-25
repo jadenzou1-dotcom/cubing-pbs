@@ -10,8 +10,7 @@ A record of my 3x3 personal bests, plus the solve data behind each one, so I can
 |---|---|
 | [`README.md`](README.md) | My current PBs, the improvement on each, and the full PB history. Generated. |
 | `ABOUT.md` | This file. Written by hand. |
-| `INSTRUCTIONS_FOR_CLAUDE.md` | How Claude should add PBs, check reconstructions and keep these docs current, so any new chat can run the workflow. Written by hand. |
-| `CLAUDE.md` | One line that loads the file above (Claude Code only auto-reads this exact name). |
+| `CLAUDE.md` | Instructions for Claude: how to add PBs, check reconstructions and keep these docs current, so any new chat can run the workflow. Claude Code reads this file automatically. Written by hand. |
 | `records/<event>/` | **The raw data.** One `.txt` file per PB, for `single`, `ao5`, `ao12`, `ao25`, `ao50` and `ao100`. |
 | `stats/<event>/<date>/` | **Generated analysis** for each PB: stats page, two charts, and a JSON copy of the numbers. |
 | `stats/progression.png` | The PB value for each event over time. |
@@ -67,4 +66,4 @@ Both appear on every stats page, and σ / mean is also a column in the README's 
 
 ## How to add a PB
 
-New PBs go through Claude: paste the csTimer export into a chat opened in this folder. Claude saves the record, runs `scripts/build.py`, checks any reconstruction on a cube simulator, and pushes. The steps are in `INSTRUCTIONS_FOR_CLAUDE.md`.
+New PBs go through Claude: paste the csTimer export into a chat opened in this folder. Claude saves the record, runs `scripts/build.py`, checks any reconstruction on a cube simulator, and pushes. The steps are in `CLAUDE.md`.
