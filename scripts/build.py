@@ -3,8 +3,14 @@
 
 Usage:  python3 scripts/build.py
 
-Each file in records/<event>/YYYY-MM-DD[suffix].txt is one PB. The file name
-gives the date; the times inside give the average. A csTimer export can be
+Each file in records/<event>/YYYY-MM-DD.txt is one PB. The file name gives
+the date; the times inside give the average. More than one PB of the same
+event on the same day: YYYY-MM-DD_2.txt, YYYY-MM-DD_3.txt, ... (in the order
+they happened; the plain name counts as #1).
+
+fast-solves/YYYY-MM-DD[_N].txt holds hand-picked good solves (one solve per
+file, same format, reconstruction optional). They get move-count metrics but
+no distributions, and never affect PBs. A csTimer export can be
 pasted in whole (its header lines are skipped, and a "single: 9.90" or
 "avg of 5: 13.53" line is checked against what the script computes).
 Two input formats work:
@@ -115,15 +121,6 @@ def parse_file(path):
     return solves, notes, claimed
 
 
-def recon_moves(recon):
-    """Move count in STM (slices count as 1), ignoring rotations and // comments."""
-    n = 0
-    for line in recon:
-        for tok in line.split("//")[0].replace("(", " ").replace(")", " ").split():
-            n += bool(MOVE_RE.match(tok))
-    return n
-
-
 def alg_link(scramble, recon):
     """alg.cubing.net link that plays the reconstruction from the scramble."""
     enc = lambda a: quote(a.replace("'", "-").replace(" ", "_"), safe="_-")
@@ -131,19 +128,100 @@ def alg_link(scramble, recon):
             f"&alg={enc(chr(10).join(recon))}&type=reconstruction")
 
 
+NAME_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})(?:_(\d+))?$")
+
+
+def file_key(f):
+    """'2026-09-25_2' -> (date, 2). Plain '2026-09-25' is #1 that day."""
+    m = NAME_RE.match(f.stem)
+    if not m:
+        raise SystemExit(f"{f}: name must be YYYY-MM-DD.txt or YYYY-MM-DD_N.txt")
+    return date.fromisoformat(m.group(1)), int(m.group(2) or 1)
+
+
+def file_label(f):
+    d, n = file_key(f)
+    return d.isoformat() + (f" (#{n})" if n > 1 else "")
+
+
+# Which step a reconstruction line belongs to, from its // comment.
+STEP_KEYS = [
+    ("Inspection", ("inspection",)),
+    ("Cross", ("xxcross", "xcross", "cross")),
+    ("F2L", ("f2l", "pair", "slot", "fl pair")),
+    ("OLL", ("oll", "coll", "eoll", "ocll")),
+    ("PLL", ("pll",)),
+    ("LL", ("zbll", "1lll", "last layer", "ll")),
+    ("AUF", ("auf",)),
+]
+LL_STEPS = {"OLL", "PLL", "LL", "AUF"}
+
+
+def analyze_recon(recon):
+    """Per-step move counts and whole-solve metrics from a reconstruction."""
+    steps, rotations, skips = [], 0, []
+    for line in recon:
+        body, _, comment = line.partition("//")
+        toks = body.replace("(", " ").replace(")", " ").split()
+        moves = sum(bool(MOVE_RE.match(t)) for t in toks)
+        rotations += sum(bool(re.match(r"^[xyz]\d*'?$", t)) for t in toks)
+        c = comment.strip()
+        cat = next((name for name, keys in STEP_KEYS
+                    if any(re.search(rf"\b{k}\b", c.lower()) for k in keys)), "Other")
+        if "skip" in c.lower():
+            skips.append(c)
+        steps.append({"name": c or "—", "cat": cat, "moves": moves})
+    by = lambda cat: sum(st["moves"] for st in steps if st["cat"] == cat)
+    xcross = any("xcross" in st["name"].lower() for st in steps)
+    # an xxcross solves two pairs in the "cross" step
+    xcross = 2 if any("xxcross" in st["name"].lower() for st in steps) else int(xcross)
+    pairs = sum(st["cat"] == "F2L" for st in steps) + xcross
+    stm = sum(st["moves"] for st in steps)
+    f2l = by("F2L") + by("Cross")
+    return {
+        "stm": stm, "rotations": rotations, "etm": stm + rotations,
+        "cross": by("Cross"), "f2l_pairs_moves": by("F2L"), "pairs": pairs,
+        "f2l": f2l, "ll": sum(by(c) for c in LL_STEPS),
+        "per_pair": (by("F2L") / pairs) if pairs else None,
+        "skips": skips, "steps": steps, "xcross": xcross,
+        "labelled": any(st["cat"] != "Other" for st in steps),
+    }
+
+
+def recon_block(s, heading):
+    """Markdown for one reconstructed solve: headline metrics, step table, recon."""
+    a = analyze_recon(s["recon"])
+    t = s["time"]
+    tps = f"{a['stm'] / t:.2f}" if math.isfinite(t) and a["stm"] else "—"
+    L = [heading, "",
+         f"**Scramble:** `{s['scramble']}`  ",
+         f"[▶ play on alg.cubing.net]({alg_link(s['scramble'], s['recon'])})", "",
+         "| Moves (STM) | TPS | Rotations | ETM |", "|---|---|---|---|",
+         f"| **{a['stm']}** | **{tps}** | {a['rotations']} | {a['etm']} |", ""]
+    if a["labelled"]:
+        L += ["| Step | Moves | Share |", "|---|---|---|"]
+        for st in a["steps"]:
+            if st["moves"] or st["cat"] != "Inspection":
+                share = f"{100 * st['moves'] / a['stm']:.0f}%" if a["stm"] else "—"
+                L.append(f"| {st['name']} | {st['moves']} | {share} |")
+        extra = [f"cross {a['cross']}"]
+        if a["pairs"]:
+            extra.append(f"F2L total {a['f2l']} ({a['pairs']} pairs"
+                         + (f", {a['per_pair']:.1f}/pair" if a["per_pair"] else "") + ")")
+        extra.append(f"last layer {a['ll']}")
+        if a["skips"]:
+            extra.append("skips: " + ", ".join(a["skips"]))
+        L += ["", "**Breakdown:** " + " · ".join(extra), ""]
+    L += ["```", *s["recon"], "```", ""]
+    return L
+
+
 def recon_section(solves, trimmed=()):
     """Markdown for every solve that has a reconstruction (empty if none do)."""
     L = []
     for i, s in enumerate(solves):
-        if not s["recon"]:
-            continue
-        moves = recon_moves(s["recon"])
-        tps = f" · {moves / s['time']:.2f} TPS" if math.isfinite(s["time"]) and moves else ""
-        L += [f"### Solve {i + 1} — {fmt(s['time'])}", "",
-              f"**Scramble:** `{s['scramble']}`  ",
-              f"**{moves} moves** (STM, rotations excluded){tps} · "
-              f"[▶ play on alg.cubing.net]({alg_link(s['scramble'], s['recon'])})", "",
-              "```", *s["recon"], "```", ""]
+        if s["recon"]:
+            L += recon_block(s, f"### Solve {i + 1} — {fmt(s['time'])}")
     return (["## Reconstructions", ""] + L) if L else []
 
 
@@ -451,8 +529,8 @@ def plot_progression(history, out):
     fig.patch.set_facecolor(SURFACE)
     for ax, ev in zip(axes, events):
         style_axes(ax)
-        pts = sorted(history[ev], key=lambda r: r["date"])
-        ds = [date.fromisoformat(r["date"]) for r in pts]
+        pts = history[ev][::-1]  # oldest first; same-day PBs keep file order
+        ds = [date.fromisoformat(r["day"]) for r in pts]
         vs = [r["average"] for r in pts]
         ax.step(ds, vs, where="post", color=COUNTED, linewidth=2)
         ax.scatter(ds, vs, s=30, color=COUNTED, edgecolors=SURFACE, zorder=3)
@@ -542,7 +620,79 @@ def single_page(day, solve, notes, prev):
     return "\n".join(L)
 
 
-def readme(history):
+def fast_solves_page():
+    files = sorted((ROOT / "fast-solves").glob("*.txt"), key=file_key, reverse=True)
+    L = ["# Fast solve bank", "",
+         "Hand-picked good solves (not PBs, not averages), newest first. "
+         "Generated by `scripts/build.py`.", "",
+         "[← all records](../README.md)", ""]
+    entries = []
+    for f in files:
+        solves, notes, _ = parse_file(f)
+        if len(solves) != 1:
+            raise SystemExit(f"{f}: a fast-solve file holds exactly one solve")
+        entries.append((f, solves[0], notes))
+    recon = [(f, s, analyze_recon(s["recon"])) for f, s, _ in entries if s["recon"]]
+    if recon:
+        stm = [a["stm"] for _, _, a in recon]
+        tps = [a["stm"] / s["time"] for _, s, a in recon]
+        L += ["## Across the bank", "",
+              "| Solves | Reconstructed | Mean time | Mean moves | Fewest moves | "
+              "Mean TPS | Highest TPS |", "|---|---|---|---|---|---|---|",
+              f"| {len(entries)} | {len(recon)} | "
+              f"{np.mean([s['time'] for _, s, _ in entries]):.2f} | {np.mean(stm):.1f} | "
+              f"{min(stm)} | {np.mean(tps):.2f} | {max(tps):.2f} |", ""]
+        crosses = [a["cross"] for _, _, a in recon if a["labelled"] and a["cross"]]
+        pp = [a["per_pair"] for _, _, a in recon if a["per_pair"]]
+        lls = [a["ll"] for _, _, a in recon if a["labelled"] and a["ll"]]
+        if crosses or pp or lls:
+            L += ["| Mean cross | Mean moves per F2L pair | Mean last layer |", "|---|---|---|",
+                  f"| {np.mean(crosses):.1f} | {np.mean(pp):.1f} | {np.mean(lls):.1f} |"
+                  .replace("nan", "—"), ""]
+    if entries:
+        L += ["## All fast solves", "",
+              "| Date | Time | Moves | TPS | Cross | Moves/pair | LL | Notes |",
+              "|---|---|---|---|---|---|---|---|"]
+        for f, s, notes in entries:
+            a = analyze_recon(s["recon"]) if s["recon"] else None
+            anchor = "#" + re.sub(r"[^a-z0-9 -]", "", f"{file_label(f)} {fmt(s['time'])}"
+                                  .lower()).replace(" ", "-")
+            cells = ([str(a["stm"]), f"{a['stm'] / s['time']:.2f}",
+                      str(a["cross"]) if a["labelled"] else "—",
+                      f"{a['per_pair']:.1f}" if a["per_pair"] else "—",
+                      str(a["ll"]) if a["labelled"] else "—"] if a else ["—"] * 5)
+            L.append(f"| [{file_label(f)}]({anchor}) | **{fmt(s['time'])}** | "
+                     + " | ".join(cells) + f" | {'; '.join(notes)} |")
+        L.append("")
+        for f, s, notes in entries:
+            heading = f"### {file_label(f)} — {fmt(s['time'])}"
+            if s["recon"]:
+                L += recon_block(s, heading)
+            else:
+                L += [heading, "", f"**Scramble:** `{s['scramble']}`", "",
+                      "_No reconstruction._", ""]
+            L += [f"> {n}" for n in notes] + ([""] if notes else [])
+    else:
+        L += ["_No fast solves yet._", ""]
+    L += ["## Adding one", "",
+          "Save `fast-solves/YYYY-MM-DD.txt` (`_2`, `_3` for more on the same day):", "",
+          "```",
+          "1. 8.42   R2 B2 L2 F D2 ...",
+          "> z2 // inspection",
+          "> D R' F D' // cross",
+          "> U R U' R' // pair 1",
+          "> ... // pair 2",
+          "> ... // OLL (Sune)",
+          "> ... // PLL (T)",
+          "# optional note, e.g. full-step, lucky F2L",
+          "```", "",
+          "Label steps in `//` comments with the words cross / xcross / pair (or f2l, slot) / "
+          "OLL / PLL / AUF / inspection, and the step breakdown fills in automatically. "
+          "Write \"skip\" in a comment to log a skip.", ""]
+    return "\n".join(L), len(entries)
+
+
+def readme(history, n_fast=0):
     L = ["# 3x3 PBs", "",
          "Personal-best averages, with the full solve list and stats behind each one.",
          "Generated by `scripts/build.py` — don't edit this file by hand.", "",
@@ -553,7 +703,8 @@ def readme(history):
             cur = history[ev][0]
             L.append(f"| **{ev}** | **{fmt(cur['average'])}** | {cur['date']} | "
                      f"[details]({cur['page']}) |")
-    L += ["", "![PB progression](stats/progression.png)", "", "## PB history", "",
+    L += ["", f"**[Fast solve bank →](fast-solves/README.md)** ({n_fast} solve{'s' if n_fast != 1 else ''})", "",
+          "![PB progression](stats/progression.png)", "", "## PB history", "",
           "Newest first. Each new PB pushes the older ones down.", ""]
     for ev in EVENTS:
         rows = history.get(ev)
@@ -572,6 +723,7 @@ def readme(history):
     L += ["## Adding a new PB", "",
           "1. Save the solves as `records/<event>/YYYY-MM-DD.txt` "
           "(`<event>` is `single`, `ao5`, `ao12`, `ao25`, `ao50` or `ao100`). "
+          "A second PB of the same event on the same day is `YYYY-MM-DD_2.txt`, then `_3`, … "
           "Paste the csTimer export as-is — header and all.",
           "2. Run `python3 scripts/build.py`.",
           "3. `git add -A && git commit -m \"ao5 PB 12.80\" && git push`.", "",
@@ -594,11 +746,10 @@ def readme(history):
 def main():
     history = {}
     for ev in EVENTS:
-        files = sorted((RECORDS / ev).glob("*.txt"))
+        files = sorted((RECORDS / ev).glob("*.txt"), key=file_key)
         rows, prev = [], None
         for f in files:  # oldest first, so each knows the PB before it
-            day = f.stem[:10]
-            date.fromisoformat(day)  # fail loudly on a bad file name
+            day = file_label(f)  # "2026-09-25", or "2026-09-25 (#2)" for a same-day repeat
             solves, notes, claimed = parse_file(f)
             want = 1 if ev == "single" else int(ev[2:])
             if len(solves) != want:
@@ -613,7 +764,7 @@ def main():
 
             outdir = STATS / ev / f.stem
             outdir.mkdir(parents=True, exist_ok=True)
-            row = {"date": day, "average": avg, "std": None,
+            row = {"date": day, "day": file_key(f)[0].isoformat(), "average": avg, "std": None,
                    "page": f"stats/{ev}/{f.stem}/README.md",
                    "recon": any(s["recon"] for s in solves)}
             if ev == "single":
@@ -642,7 +793,10 @@ def main():
         history[ev] = rows[::-1]  # newest first
 
     plot_progression(history, STATS / "progression.png")
-    (ROOT / "README.md").write_text(readme(history))
+    (ROOT / "fast-solves").mkdir(exist_ok=True)
+    page, n_fast = fast_solves_page()
+    (ROOT / "fast-solves" / "README.md").write_text(page)
+    (ROOT / "README.md").write_text(readme(history, n_fast))
 
 
 if __name__ == "__main__":
