@@ -38,6 +38,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.dates as mdates
+import matplotlib.patches
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats as sps
@@ -207,7 +208,7 @@ def style_axes(ax):
     ax.set_axisbelow(True)
 
 
-def plot_distribution(event, day, times, trimmed, avg, st, out):
+def plot_distribution(event, day, times, trimmed, avg, st, out, solves=None):
     finite_idx = [i for i, t in enumerate(times) if math.isfinite(t)]
     counted = [times[i] for i in finite_idx if i not in trimmed]
     cut = [times[i] for i in finite_idx if i in trimmed]
@@ -275,6 +276,113 @@ def plot_distribution(event, day, times, trimmed, avg, st, out):
     axb.scatter(allt, 1 + jitter, s=14, c=colors, edgecolors=SURFACE, linewidths=0.6, zorder=3)
     axb.set_yticks([])
     axb.spines["left"].set_visible(False)
+    axb.set_xlabel("Solve time (s)", color=INK_2)
+
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=SURFACE)
+    plt.close(fig)
+
+
+def plot_numberline(event, day, times, trimmed, avg, st, out, solves=None):
+    """Small averages (ao5/ao12): every solve as a labeled dot on a number line.
+
+    Dots too close to label side by side stack upward, so clusters form piles.
+    The number line itself is shaded by how many solves sit nearby (darker =
+    more concentrated), which shows density without a curve going up and down.
+    """
+    finite = [(t, i) for i, t in enumerate(times) if math.isfinite(t)]
+    finite.sort()
+    allt = np.array([t for t, _ in finite])
+    span = allt.max() - allt.min()
+    lo, hi = allt.min() - 0.08 * span - 0.3, allt.max() + 0.08 * span + 0.3
+    min_sep = 0.075 * (hi - lo)  # roughly one label's width in data units
+
+    # Stack: each dot takes the lowest level with no neighbor within min_sep.
+    levels, placed = [], []  # placed: (x, level)
+    for t, _ in finite:
+        lvl = 0
+        while any(abs(t - x) < min_sep and l == lvl for x, l in placed):
+            lvl += 1
+        placed.append((t, lvl))
+        levels.append(lvl)
+    top = max(levels)
+
+    fig, (ax, axb) = plt.subplots(
+        2, 1, figsize=(9, 3.6 + 0.55 * top), sharex=True,
+        gridspec_kw={"height_ratios": [3 + top, 1], "hspace": 0.12},
+    )
+    fig.patch.set_facecolor(SURFACE)
+    for a in (ax, axb):
+        a.set_facecolor(SURFACE)
+        for side in ("top", "right", "left"):
+            a.spines[side].set_visible(False)
+        a.spines["bottom"].set_color(GRID)
+        a.tick_params(colors=INK_2, labelsize=9)
+        a.set_yticks([])
+
+    # Density-shaded number line (same KDE as the big averages, drawn as color).
+    xs = np.linspace(lo, hi, 600)
+    kde = sps.gaussian_kde(allt)
+    kde.set_bandwidth(kde.factor * 0.6)
+    d = kde(xs)
+    d = d / d.max()
+    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("conc", [SURFACE, COUNTED])
+    band_h = 0.32
+    ax.imshow(d[np.newaxis, :], extent=(lo, hi, -band_h - 0.25, -0.25), aspect="auto",
+              cmap=cmap, vmin=0, vmax=1, interpolation="bilinear", zorder=1)
+
+    # Dots + exact time labels.
+    for (t, i), lvl in zip(finite, levels):
+        is_cut = i in trimmed
+        y = 0.35 + lvl * 0.9
+        ax.scatter([t], [y], s=90, zorder=3,
+                   facecolors=SURFACE if is_cut else COUNTED,
+                   edgecolors=TRIMMED if is_cut else COUNTED, linewidths=2)
+        ax.plot([t, t], [-0.25, y], color=TRIMMED if is_cut else COUNTED,
+                linewidth=0.8, alpha=0.5, zorder=2)
+        pen = "+" if solves and solves[i]["penalty"] == "+2" else ""
+        ax.text(t, y + 0.28, f"({fmt(t)}{pen})" if is_cut else fmt(t) + pen,
+                ha="center", va="bottom", fontsize=9,
+                color=INK_2 if is_cut else INK, fontweight="normal" if is_cut else "bold",
+                bbox={"facecolor": SURFACE, "edgecolor": "none", "pad": 1}, zorder=4)
+
+    # Average and median: markers under the shaded line, so nothing crosses the dots.
+    base = -band_h - 0.25
+    avg_right = avg >= st["median"]
+    for x, lab, col, right in [(avg, f"{event} {fmt(avg)}", INK, avg_right),
+                               (st["median"], f"median {fmt(st['median'])}", INK_2, not avg_right)]:
+        ax.plot([x, x], [base, -0.25], color=col, linewidth=1.5, zorder=2,
+                linestyle="-" if col == INK else ":")
+        ax.scatter([x], [base - 0.12], marker="^", s=60, color=col, zorder=3)
+        ax.text(x, base - 0.3, f" {lab} " if right else f" {lab} ", color=col, fontsize=9,
+                va="top", ha="left" if right else "right",
+                fontweight="bold" if col == INK else "normal")
+    ytop = 0.35 + top * 0.9 + 0.6
+    ax.set_ylim(base - 0.75, ytop)
+    ax.set_xlim(lo, hi)
+    ax.spines["bottom"].set_visible(False)
+    ax.tick_params(axis="x", length=0)
+
+    ax.set_title(f"{event} PB · {fmt(avg)} · {day}", loc="left", color=INK,
+                 fontsize=13, fontweight="bold", pad=30)
+    handles = [
+        plt.Line2D([], [], marker="o", ls="", ms=8, color=COUNTED, label="Counted solve"),
+        plt.Line2D([], [], marker="o", ls="", ms=8, mfc=SURFACE, mec=TRIMMED, mew=2,
+                   label=f"Trimmed (best/worst {trim_count(len(times))})"),
+        matplotlib.patches.Patch(color=COUNTED, alpha=0.8,
+                                 label="Shaded line: darker = more solves nearby"),
+    ]
+    ax.legend(handles=handles, frameon=False, fontsize=8.5, labelcolor=INK_2,
+              loc="lower left", bbox_to_anchor=(0, 1.0), ncol=3)
+
+    # Box plot for quartiles, same x-axis.
+    axb.boxplot(allt, orientation="horizontal", widths=0.55, patch_artist=True,
+                showfliers=True,
+                boxprops={"facecolor": "#dbe8f8", "edgecolor": COUNTED},
+                medianprops={"color": INK, "linewidth": 1.5},
+                whiskerprops={"color": INK_2}, capprops={"color": INK_2},
+                flierprops={"marker": "o", "markersize": 5, "markerfacecolor": SURFACE,
+                            "markeredgecolor": INK_2})
+    axb.set_yticks([])
     axb.set_xlabel("Solve time (s)", color=INK_2)
 
     fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=SURFACE)
@@ -490,7 +598,8 @@ def main():
 
             st = describe(times)
             row["std"] = st["std"]
-            plot_distribution(ev, day, times, trimmed, avg, st, outdir / "distribution.png")
+            plot = plot_numberline if len(times) <= 12 else plot_distribution
+            plot(ev, day, times, trimmed, avg, st, outdir / "distribution.png", solves=solves)
             plot_sequence(ev, day, times, trimmed, avg, outdir / "sequence.png")
             (outdir / "README.md").write_text(
                 session_page(ev, day, solves, notes, avg, trimmed, st, prev))
