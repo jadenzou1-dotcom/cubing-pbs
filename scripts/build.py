@@ -638,11 +638,12 @@ def fast_solves_page():
         stm = [a["stm"] for _, _, a in recon]
         tps = [a["stm"] / s["time"] for _, s, a in recon]
         L += ["## Across the bank", "",
-              "| Solves | Reconstructed | Mean time | Mean moves | Fewest moves | "
-              "Mean TPS | Highest TPS |", "|---|---|---|---|---|---|---|",
+              "| Solves | Reconstructed | Mean time | Mean moves (STM) | Fewest moves | "
+              "Mean TPS | Highest TPS | Mean rotations |", "|---|---|---|---|---|---|---|---|",
               f"| {len(entries)} | {len(recon)} | "
               f"{np.mean([s['time'] for _, s, _ in entries]):.2f} | {np.mean(stm):.1f} | "
-              f"{min(stm)} | {np.mean(tps):.2f} | {max(tps):.2f} |", ""]
+              f"{min(stm)} | {np.mean(tps):.2f} | {max(tps):.2f} | "
+              f"{np.mean([a['rotations'] for _, _, a in recon]):.1f} |", ""]
         crosses = [a["cross"] for _, _, a in recon if a["labelled"] and a["cross"]]
         pp = [a["per_pair"] for _, _, a in recon if a["per_pair"]]
         lls = [a["ll"] for _, _, a in recon if a["labelled"] and a["ll"]]
@@ -652,16 +653,16 @@ def fast_solves_page():
                   .replace("nan", "—"), ""]
     if entries:
         L += ["## All fast solves", "",
-              "| Date | Time | Moves | TPS | Cross | Moves/pair | LL | Notes |",
-              "|---|---|---|---|---|---|---|---|"]
+              "| Date | Time | Moves (STM) | TPS | Rotations | Cross | Moves/pair | LL | Notes |",
+              "|---|---|---|---|---|---|---|---|---|"]
         for f, s, notes in entries:
             a = analyze_recon(s["recon"]) if s["recon"] else None
             anchor = "#" + re.sub(r"[^a-z0-9 -]", "", f"{file_label(f)} {fmt(s['time'])}"
                                   .lower()).replace(" ", "-")
-            cells = ([str(a["stm"]), f"{a['stm'] / s['time']:.2f}",
+            cells = ([str(a["stm"]), f"{a['stm'] / s['time']:.2f}", str(a["rotations"]),
                       str(a["cross"]) if a["labelled"] else "—",
                       f"{a['per_pair']:.1f}" if a["per_pair"] else "—",
-                      str(a["ll"]) if a["labelled"] else "—"] if a else ["—"] * 5)
+                      str(a["ll"]) if a["labelled"] else "—"] if a else ["—"] * 6)
             L.append(f"| [{file_label(f)}]({anchor}) | **{fmt(s['time'])}** | "
                      + " | ".join(cells) + f" | {'; '.join(notes)} |")
         L.append("")
