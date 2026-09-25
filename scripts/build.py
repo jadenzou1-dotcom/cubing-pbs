@@ -1,0 +1,408 @@
+#!/usr/bin/env python3
+"""Rebuild every stats page, chart, and the root README from records/.
+
+Usage:  python3 scripts/build.py
+
+Each file in records/<event>/YYYY-MM-DD[suffix].txt is one PB. The file name
+gives the date; the times inside give the average. Two input formats work:
+
+  numbered (with scrambles)       comma-separated (times only)
+  1. (14.53)   D' L' U2 ...       15.05, 13.86, (11.38), 17.14
+  2. 12.41   F2 U2 F2 ...         13.29, 17.90, 15.59
+
+Parentheses are optional and ignored: the script decides which solves get
+trimmed itself. "17.03+" means a +2 already included in 17.03 (csTimer style).
+"DNF" / "DNF(14.20)" count as the worst possible solve. Lines starting with #
+are notes and appear on the stats page.
+"""
+
+import json
+import math
+import re
+from datetime import date, timedelta
+from pathlib import Path
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy import stats as sps
+
+ROOT = Path(__file__).resolve().parent.parent
+RECORDS = ROOT / "records"
+STATS = ROOT / "stats"
+EVENTS = ["ao5", "ao12", "ao25", "ao50", "ao100"]
+
+# Colors (reference palette, light mode)
+SURFACE = "#fcfcfb"
+INK = "#0b0b0b"
+INK_2 = "#52514e"
+GRID = "#e4e3df"
+COUNTED = "#2a78d6"  # blue: solves that count toward the average
+TRIMMED = "#b9b8b2"  # gray: solves trimmed off the ends
+FIT = "#eb6834"  # orange: fitted normal curve
+ACCENT = "#1baf7a"  # aqua: KDE / rolling average
+
+TIME_RE = re.compile(r"\(?\s*(DNF(?:\([\d:.]+\))?|[\d:]+\.\d+\+?)\s*\)?", re.I)
+
+
+# ---------------------------------------------------------------- parsing
+
+def parse_time(tok):
+    """'17.03+' -> (17.03, '+2'); 'DNF' -> (inf, 'DNF'); '1:02.50' -> 62.5."""
+    tok = tok.strip("() ")
+    if tok.upper().startswith("DNF"):
+        return math.inf, "DNF"
+    penalty = "+2" if tok.endswith("+") else ""
+    tok = tok.rstrip("+")
+    secs = 0.0
+    for part in tok.split(":"):
+        secs = secs * 60 + float(part)
+    return secs, penalty
+
+
+def parse_file(path):
+    solves, notes = [], []
+    for raw in path.read_text().splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if line.startswith("#"):
+            notes.append(line.lstrip("# ").rstrip())
+            continue
+        numbered = re.match(r"^\d+\.\s+(.*)$", line)
+        if numbered:
+            rest = numbered.group(1)
+            m = TIME_RE.match(rest)
+            t, pen = parse_time(m.group(1))
+            solves.append({"time": t, "penalty": pen, "scramble": rest[m.end():].strip()})
+        else:
+            for tok in line.split(","):
+                if tok.strip():
+                    t, pen = parse_time(tok)
+                    solves.append({"time": t, "penalty": pen, "scramble": ""})
+    return solves, notes
+
+
+# ---------------------------------------------------------------- stats
+
+def trim_count(n):
+    """WCA/csTimer rule: drop 5% of solves (rounded up) from each end."""
+    return max(1, math.ceil(n * 0.05))
+
+
+def average(times):
+    """Trimmed average, returns (value, set of trimmed indices)."""
+    n = len(times)
+    k = trim_count(n)
+    order = sorted(range(n), key=lambda i: times[i])
+    trimmed = set(order[:k] + order[-k:])
+    counted = [times[i] for i in range(n) if i not in trimmed]
+    if any(math.isinf(t) for t in counted):
+        return math.inf, trimmed
+    return round(sum(counted) / len(counted) + 1e-9, 2), trimmed
+
+
+def describe(times):
+    finite = np.array([t for t in times if math.isfinite(t)])
+    q1, med, q3 = np.percentile(finite, [25, 50, 75])
+    out = {
+        "n": len(times),
+        "dnf": len(times) - len(finite),
+        "mean": finite.mean(),
+        "median": med,
+        "std": finite.std(ddof=1),
+        "min": finite.min(),
+        "q1": q1,
+        "q3": q3,
+        "max": finite.max(),
+        "iqr": q3 - q1,
+        "range": finite.max() - finite.min(),
+        "skew": sps.skew(finite, bias=False) if len(finite) > 2 else float("nan"),
+        "shapiro_p": sps.shapiro(finite).pvalue if len(finite) >= 8 else float("nan"),
+    }
+    return out
+
+
+def fmt(t):
+    if math.isinf(t):
+        return "DNF"
+    if t >= 60:
+        return f"{int(t // 60)}:{t % 60:05.2f}"
+    return f"{t:.2f}"
+
+
+# ---------------------------------------------------------------- charts
+
+def style_axes(ax):
+    ax.set_facecolor(SURFACE)
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    for side in ("left", "bottom"):
+        ax.spines[side].set_color(GRID)
+    ax.tick_params(colors=INK_2, labelsize=9)
+    ax.grid(axis="y", color=GRID, linewidth=0.8)
+    ax.set_axisbelow(True)
+
+
+def plot_distribution(event, day, times, trimmed, avg, st, out):
+    finite_idx = [i for i, t in enumerate(times) if math.isfinite(t)]
+    counted = [times[i] for i in finite_idx if i not in trimmed]
+    cut = [times[i] for i in finite_idx if i in trimmed]
+    allt = np.array(counted + cut)
+
+    n = len(times)
+    width = 0.25 if n <= 5 else 0.5
+    lo = math.floor(allt.min() / width) * width
+    hi = math.ceil(allt.max() / width) * width + width
+    bins = np.arange(lo, hi + 1e-9, width)
+
+    fig, (ax, axb) = plt.subplots(
+        2, 1, figsize=(9, 5.4), sharex=True,
+        gridspec_kw={"height_ratios": [4, 1], "hspace": 0.08},
+    )
+    fig.patch.set_facecolor(SURFACE)
+    style_axes(ax)
+    ax.hist([counted, cut], bins=bins, stacked=True, color=[COUNTED, TRIMMED],
+            edgecolor=SURFACE, linewidth=1.5,
+            label=["Counted solves", f"Trimmed (best/worst {trim_count(n)})"])
+
+    xs = np.linspace(lo, hi, 400)
+    scale = len(allt) * width  # density -> count per bin
+    ax.plot(xs, sps.norm.pdf(xs, st["mean"], st["std"]) * scale,
+            color=FIT, linewidth=2, label=f"Normal fit (μ={st['mean']:.2f}, σ={st['std']:.2f})")
+    if len(allt) >= 12:
+        kde = sps.gaussian_kde(allt)
+        ax.plot(xs, kde(xs) * scale, color=ACCENT, linewidth=2, linestyle="--",
+                label="Smoothed shape (KDE)")
+
+    ax.axvline(avg, color=INK, linewidth=1.2)
+    ax.axvline(st["median"], color=INK, linewidth=1.2, linestyle=":")
+    ax.set_ylim(top=ax.get_ylim()[1] * 1.12)  # headroom for the labels
+    ymax = ax.get_ylim()[1]
+    # Put each label on the outer side of its line so they never collide.
+    avg_right = avg >= st["median"]
+    ax.text(avg, ymax * 0.98, f" {event} {fmt(avg)} " if avg_right else f"{event} {fmt(avg)} ",
+            color=INK, fontsize=9, va="top", ha="left" if avg_right else "right",
+            fontweight="bold")
+    ax.text(st["median"], ymax * 0.98, f" median {fmt(st['median'])} ", color=INK_2,
+            fontsize=9, va="top", ha="right" if avg_right else "left")
+
+    ax.set_ylabel("Solves", color=INK_2)
+    ax.yaxis.get_major_locator().set_params(integer=True)
+    ax.set_title(f"{event} PB · {fmt(avg)} · {day}", loc="left", color=INK,
+                 fontsize=13, fontweight="bold", pad=52)
+    ax.legend(frameon=False, fontsize=8.5, labelcolor=INK_2, loc="lower left",
+              bbox_to_anchor=(0, 1.01), ncol=2)
+
+    # Box plot + every solve as a dot underneath, same x-axis.
+    style_axes(axb)
+    axb.grid(False)
+    axb.boxplot(allt, orientation="horizontal", widths=0.55, patch_artist=True, showfliers=False,
+                boxprops={"facecolor": "#dbe8f8", "edgecolor": COUNTED},
+                medianprops={"color": INK, "linewidth": 1.5},
+                whiskerprops={"color": INK_2}, capprops={"color": INK_2})
+    jitter = np.random.default_rng(0).uniform(-0.18, 0.18, len(allt))
+    colors = [COUNTED] * len(counted) + [TRIMMED] * len(cut)
+    axb.scatter(allt, 1 + jitter, s=14, c=colors, edgecolors=SURFACE, linewidths=0.6, zorder=3)
+    axb.set_yticks([])
+    axb.spines["left"].set_visible(False)
+    axb.set_xlabel("Solve time (s)", color=INK_2)
+
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=SURFACE)
+    plt.close(fig)
+
+
+def plot_sequence(event, day, times, trimmed, avg, out):
+    n = len(times)
+    x = np.arange(1, n + 1)
+    y = np.array([t if math.isfinite(t) else np.nan for t in times])
+
+    fig, ax = plt.subplots(figsize=(9, 3.6))
+    fig.patch.set_facecolor(SURFACE)
+    style_axes(ax)
+    colors = [TRIMMED if i in trimmed else COUNTED for i in range(n)]
+    if n >= 12:
+        w = 5 if n < 50 else 12
+        roll = [average(list(y[i - w + 1:i + 1]))[0] if i >= w - 1 else np.nan for i in range(n)]
+        ax.plot(x, roll, color=ACCENT, linewidth=2, label=f"Rolling ao{w}")
+    ax.scatter(x, y, s=22 if n <= 25 else 14, c=colors, edgecolors=SURFACE, linewidths=0.6,
+               zorder=3, label="Solve (gray = trimmed)")
+    ax.axhline(avg, color=INK, linewidth=1, linestyle="--")
+    ax.text(n + 0.5, avg, f" {event}\n {fmt(avg)}", color=INK, fontsize=8.5, va="center")
+    ax.set_xlim(0.5, n + 0.5)
+    ax.set_xlabel("Solve #", color=INK_2)
+    ax.set_ylabel("Time (s)", color=INK_2)
+    ax.set_title(f"{event} · solves in order", loc="left", color=INK, fontsize=12,
+                 fontweight="bold")
+    ax.legend(frameon=False, fontsize=8.5, labelcolor=INK_2, loc="upper left", ncol=2)
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=SURFACE)
+    plt.close(fig)
+
+
+def plot_progression(history, out):
+    """PB value over time, one small panel per event (different scales)."""
+    events = [e for e in EVENTS if history.get(e)]
+    fig, axes = plt.subplots(1, len(events), figsize=(2.6 * len(events), 2.8), sharey=False)
+    axes = np.atleast_1d(axes)
+    fig.patch.set_facecolor(SURFACE)
+    for ax, ev in zip(axes, events):
+        style_axes(ax)
+        pts = sorted(history[ev], key=lambda r: r["date"])
+        ds = [date.fromisoformat(r["date"]) for r in pts]
+        vs = [r["average"] for r in pts]
+        ax.step(ds, vs, where="post", color=COUNTED, linewidth=2)
+        ax.scatter(ds, vs, s=30, color=COUNTED, edgecolors=SURFACE, zorder=3)
+        ax.set_title(f"{ev}  {fmt(vs[-1])}", loc="left", color=INK, fontsize=10,
+                     fontweight="bold")
+        if ds[0] == ds[-1]:  # one PB so far: give the axis a month of room
+            ax.set_xlim(ds[0] - timedelta(days=15), ds[0] + timedelta(days=15))
+        loc = mdates.AutoDateLocator(minticks=2, maxticks=4)
+        ax.xaxis.set_major_locator(loc)
+        ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(loc))
+        ax.tick_params(axis="x", labelsize=7.5)
+        ax.margins(y=0.3)
+    fig.suptitle("PB progression", x=0.01, ha="left", color=INK, fontsize=12,
+                 fontweight="bold")
+    fig.tight_layout()
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=SURFACE)
+    plt.close(fig)
+
+
+# ---------------------------------------------------------------- pages
+
+def session_page(event, day, solves, notes, avg, trimmed, st, prev):
+    counted_std = np.std([s["time"] for i, s in enumerate(solves) if i not in trimmed], ddof=1)
+    L = [f"# {event} PB — {fmt(avg)}", "", f"**Date:** {day}  "]
+    if prev:
+        L.append(f"**Previous PB:** {fmt(prev['average'])} ({prev['date']}) · "
+                 f"improved by **{prev['average'] - avg:.2f}s**  ")
+    L += [f"[← all records](../../../README.md)", ""]
+    for note in notes:
+        L.append(f"> {note}")
+    if notes:
+        L.append("")
+    L += ["## Stats", "",
+          "| | |", "|---|---|",
+          f"| **{event} (official, trimmed)** | **{fmt(avg)}** |",
+          f"| Solves | {st['n']} (trimmed {trim_count(st['n'])} from each end) |",
+          f"| Mean (all solves) | {st['mean']:.2f} |",
+          f"| Median | {st['median']:.2f} |",
+          f"| Std dev (σ, all solves) | {st['std']:.2f} |",
+          f"| Std dev (σ, counted solves only) | {counted_std:.2f} |",
+          f"| Min / Best | {fmt(st['min'])} |",
+          f"| Q1 (25th pct) | {st['q1']:.2f} |",
+          f"| Q3 (75th pct) | {st['q3']:.2f} |",
+          f"| Max / Worst | {fmt(st['max'])} |",
+          f"| IQR (Q3 − Q1) | {st['iqr']:.2f} |",
+          f"| Range | {st['range']:.2f} |"]
+    if st["dnf"]:
+        L.append(f"| DNFs | {st['dnf']} |")
+    if st["n"] >= 8:
+        L.append(f"| Skewness | {st['skew']:+.2f} |")
+        L.append(f"| Shapiro–Wilk p (normality) | {st['shapiro_p']:.3f} |")
+    finite = [s["time"] for s in solves if math.isfinite(s["time"])]
+    thresholds = [t for t in range(int(min(finite)) + 1, int(max(finite)) + 2)][:6]
+    subs = " · ".join(f"sub-{t}: {sum(x < t for x in finite)}" for t in thresholds)
+    L += ["", f"**Sub-X counts:** {subs}", ""]
+    if st["n"] >= 8:
+        L += ["<sub>Skewness > 0 means a longer tail of slow solves (typical for cubing). "
+              "Shapiro–Wilk p < 0.05 means the times are unlikely to be normally distributed.</sub>",
+              ""]
+    L += ["## Distribution", "", "![distribution](distribution.png)", "",
+          "## Solves in order", "", "![sequence](sequence.png)", "",
+          "## Solves", "", "| # | Time | Scramble |" if any(s["scramble"] for s in solves)
+          else "| # | Time |",
+          "|---|---|---|" if any(s["scramble"] for s in solves) else "|---|---|"]
+    for i, s in enumerate(solves):
+        t = fmt(s["time"]) + ("+" if s["penalty"] == "+2" else "")
+        t = f"({t})" if i in trimmed else f"**{t}**"
+        row = f"| {i + 1} | {t} |"
+        if s["scramble"]:
+            row += f" `{s['scramble']}` |"
+        L.append(row)
+    L += ["", "<sub>Bold = counted, (parentheses) = trimmed. `+` = includes a +2 penalty.</sub>", ""]
+    return "\n".join(L)
+
+
+def readme(history):
+    L = ["# 3x3 PBs", "",
+         "Personal-best averages, with the full solve list and stats behind each one.",
+         "Generated by `scripts/build.py` — don't edit this file by hand.", "",
+         "## Current PBs", "",
+         "| Event | PB | Date | Stats |", "|---|---|---|---|"]
+    for ev in EVENTS:
+        if history.get(ev):
+            cur = history[ev][0]
+            L.append(f"| **{ev}** | **{fmt(cur['average'])}** | {cur['date']} | "
+                     f"[stats]({cur['page']}) |")
+    L += ["", "![PB progression](stats/progression.png)", "", "## PB history", "",
+          "Newest first. Each new PB pushes the older ones down.", ""]
+    for ev in EVENTS:
+        rows = history.get(ev)
+        if not rows:
+            continue
+        L += [f"### {ev}", "", "| Date | Time | Improvement | σ | Stats |", "|---|---|---|---|---|"]
+        for i, r in enumerate(rows):
+            older = rows[i + 1] if i + 1 < len(rows) else None
+            imp = f"−{older['average'] - r['average']:.2f}" if older else "first recorded"
+            t = f"**{fmt(r['average'])}**" if i == 0 else fmt(r["average"])
+            L.append(f"| {r['date']} | {t} | {imp} | {r['std']:.2f} | [stats]({r['page']}) |")
+        L.append("")
+    L += ["## Adding a new PB", "",
+          "1. Save the solves as `records/<event>/YYYY-MM-DD.txt` "
+          "(paste straight from csTimer — numbered lines with scrambles, or comma-separated times).",
+          "2. Run `python3 scripts/build.py`.",
+          "3. `git add -A && git commit -m \"ao5 PB 12.80\" && git push`.", "",
+          "The new record goes to the top of its history and the README updates itself.", ""]
+    return "\n".join(L)
+
+
+# ---------------------------------------------------------------- main
+
+def main():
+    history = {}
+    for ev in EVENTS:
+        files = sorted((RECORDS / ev).glob("*.txt"))
+        rows, prev = [], None
+        for f in files:  # oldest first, so each knows the PB before it
+            day = f.stem[:10]
+            date.fromisoformat(day)  # fail loudly on a bad file name
+            solves, notes = parse_file(f)
+            want = int(ev[2:])
+            if len(solves) != want:
+                raise SystemExit(f"{f}: expected {want} solves, found {len(solves)}")
+            times = [s["time"] for s in solves]
+            avg, trimmed = average(times)
+            st = describe(times)
+            if prev and avg >= prev["average"]:
+                print(f"warning: {f.name} ({fmt(avg)}) is not faster than {prev['date']} "
+                      f"({fmt(prev['average'])})")
+
+            outdir = STATS / ev / f.stem
+            outdir.mkdir(parents=True, exist_ok=True)
+            plot_distribution(ev, day, times, trimmed, avg, st, outdir / "distribution.png")
+            plot_sequence(ev, day, times, trimmed, avg, outdir / "sequence.png")
+            (outdir / "README.md").write_text(
+                session_page(ev, day, solves, notes, avg, trimmed, st, prev))
+            (outdir / "stats.json").write_text(json.dumps(
+                {"event": ev, "date": day, "average": avg,
+                 **{k: (round(float(v), 4) if isinstance(v, (float, np.floating)) else int(v))
+                    for k, v in st.items()},
+                 "times": [None if math.isinf(t) else t for t in times]}, indent=2))
+
+            row = {"date": day, "average": avg, "std": st["std"],
+                   "page": f"stats/{ev}/{f.stem}/README.md"}
+            rows.append(row)
+            prev = row
+            print(f"{ev:>5}  {day}  {fmt(avg)}")
+        history[ev] = rows[::-1]  # newest first
+
+    plot_progression(history, STATS / "progression.png")
+    (ROOT / "README.md").write_text(readme(history))
+
+
+if __name__ == "__main__":
+    main()
