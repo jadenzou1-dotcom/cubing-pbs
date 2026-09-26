@@ -12,8 +12,8 @@ A record of my 3x3 personal bests, plus the solve data behind each one, so I can
 | `REPO_GUIDE.md` | This guide: what every folder holds, what each stat and chart means, and how reconstructions and consistency are measured. |
 | `CLAUDE.md` | Instructions for Claude: how to add PBs, check reconstructions and keep these docs current, so any new chat can run the workflow. Claude Code reads this file automatically. |
 | `records/<event>/` | **The raw data.** One `.txt` file per PB, for `single`, `ao5`, `ao12`, `ao25`, `ao50` and `ao100`. |
-| `stats/<event>/<date>/` | **Generated analysis** for each PB: stats page, two charts, and a JSON copy of the numbers. |
-| `stats/progression.png` | The PB value for each event over time. |
+| `stats/<event>/` | **The analysis.** One page per PB, named like `ao5_2026-09-25.md`, with the stats, both charts and every solve. |
+| `stats/charts/` | The chart images the pages display (GitHub pages can't hold images inline), plus `progression.png`: each event's PB over time. |
 | `fast-solves/` | A hand-picked bank of good solves with reconstructions. Not averages, so no distributions. |
 | `scripts/build.py` | Reads everything in `records/` and `fast-solves/` and regenerates all the generated files above. |
 

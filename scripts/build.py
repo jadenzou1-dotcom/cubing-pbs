@@ -33,7 +33,7 @@ belong to that solve. Use // for step comments:
   > U R U' R' // F2L 1
 """
 
-import json
+import shutil
 import math
 import re
 from datetime import date, timedelta
@@ -52,6 +52,7 @@ from scipy import stats as sps
 ROOT = Path(__file__).resolve().parent.parent
 RECORDS = ROOT / "records"
 STATS = ROOT / "stats"
+CHARTS = STATS / "charts"
 EVENTS = ["single", "ao5", "ao12", "ao25", "ao50", "ao100"]
 
 # Colors (reference palette, light mode)
@@ -551,13 +552,13 @@ def plot_progression(history, out):
 
 # ---------------------------------------------------------------- pages
 
-def session_page(event, day, solves, notes, avg, trimmed, st, prev):
+def session_page(event, day, solves, notes, avg, trimmed, st, prev, name):
     counted_std = np.std([s["time"] for i, s in enumerate(solves) if i not in trimmed], ddof=1)
     L = [f"# {event} PB — {fmt(avg)}", "", f"**Date:** {day}  "]
     if prev:
         L.append(f"**Previous PB:** {fmt(prev['average'])} ({prev['date']}) · "
                  f"improved by **{prev['average'] - avg:.2f}s**  ")
-    L += [f"[← all records](../../../README.md)", ""]
+    L += [f"[← all records](../../README.md)", ""]
     for note in notes:
         L.append(f"> {note}")
     if notes:
@@ -591,8 +592,8 @@ def session_page(event, day, solves, notes, avg, trimmed, st, prev):
         L += ["<sub>Skewness > 0 means a longer tail of slow solves (typical for cubing). "
               "Shapiro–Wilk p < 0.05 means the times are unlikely to be normally distributed.</sub>",
               ""]
-    L += ["## Distribution", "", "![distribution](distribution.png)", "",
-          "## Solves in order", "", "![sequence](sequence.png)", "",
+    L += ["## Distribution", "", f"![distribution](../charts/{name}_distribution.png)", "",
+          "## Solves in order", "", f"![sequence](../charts/{name}_sequence.png)", "",
           *recon_section(solves, trimmed),
           "## Solves", "", "| # | Time | Scramble |" if any(s["scramble"] for s in solves)
           else "| # | Time |",
@@ -613,7 +614,7 @@ def single_page(day, solve, notes, prev):
     if prev:
         L.append(f"**Previous PB:** {fmt(prev['average'])} ({prev['date']}) · "
                  f"improved by **{prev['average'] - solve['time']:.2f}s**  ")
-    L += ["[← all records](../../../README.md)", ""]
+    L += ["[← all records](../../README.md)", ""]
     L += [f"> {n}" for n in notes] + ([""] if notes else [])
     L += [f"**Scramble:** `{solve['scramble']}`", ""]
     L += recon_section([solve]) or [
@@ -692,7 +693,7 @@ def readme(history, n_fast=0):
             L.append(f"| **{ev}** | **{fmt(cur['average'])}** | {cur['date']} | "
                      f"[details]({cur['page']}) |")
     L += ["", f"**[Fast solve bank →](fast-solves/README.md)** ({n_fast} solve{'s' if n_fast != 1 else ''})", "",
-          "![PB progression](stats/progression.png)", "", "## PB history", "",
+          "![PB progression](stats/charts/progression.png)", "", "## PB history", "",
           "Newest first. Each new PB pushes the older ones down.", ""]
     for ev in EVENTS:
         rows = history.get(ev)
@@ -714,6 +715,9 @@ def readme(history, n_fast=0):
 # ---------------------------------------------------------------- main
 
 def main():
+    # stats/ is fully generated: start clean so renamed or removed records leave nothing behind
+    shutil.rmtree(STATS, ignore_errors=True)
+    CHARTS.mkdir(parents=True)
     history = {}
     for ev in EVENTS:
         files = sorted((RECORDS / ev).glob("*.txt"), key=file_key)
@@ -732,13 +736,14 @@ def main():
                 print(f"warning: {f.name} ({fmt(avg)}) is not faster than {prev['date']} "
                       f"({fmt(prev['average'])})")
 
-            outdir = STATS / ev / f.stem
-            outdir.mkdir(parents=True, exist_ok=True)
+            name = f"{ev}_{f.stem}"  # e.g. ao5_2026-09-25_2
+            (STATS / ev).mkdir(parents=True, exist_ok=True)
+            page = STATS / ev / f"{name}.md"
             row = {"date": day, "day": file_key(f)[0].isoformat(), "average": avg, "std": None, "cv": None,
-                   "page": f"stats/{ev}/{f.stem}/README.md",
+                   "page": f"stats/{ev}/{name}.md",
                    "recon": any(s["recon"] for s in solves)}
             if ev == "single":
-                (outdir / "README.md").write_text(single_page(day, solves[0], notes, prev))
+                page.write_text(single_page(day, solves[0], notes, prev))
                 rows.append(row)
                 prev = row
                 print(f"{ev:>6}  {day}  {fmt(avg)}")
@@ -747,22 +752,16 @@ def main():
             st = describe(times)
             row["std"], row["cv"] = st["std"], st["cv"]
             plot = plot_numberline if len(times) <= 12 else plot_distribution
-            plot(ev, day, times, trimmed, avg, st, outdir / "distribution.png", solves=solves)
-            plot_sequence(ev, day, times, trimmed, avg, outdir / "sequence.png")
-            (outdir / "README.md").write_text(
-                session_page(ev, day, solves, notes, avg, trimmed, st, prev))
-            (outdir / "stats.json").write_text(json.dumps(
-                {"event": ev, "date": day, "average": avg,
-                 **{k: (round(float(v), 4) if isinstance(v, (float, np.floating)) else int(v))
-                    for k, v in st.items()},
-                 "times": [None if math.isinf(t) else t for t in times]}, indent=2))
+            plot(ev, day, times, trimmed, avg, st, CHARTS / f"{name}_distribution.png", solves=solves)
+            plot_sequence(ev, day, times, trimmed, avg, CHARTS / f"{name}_sequence.png")
+            page.write_text(session_page(ev, day, solves, notes, avg, trimmed, st, prev, name))
 
             rows.append(row)
             prev = row
             print(f"{ev:>6}  {day}  {fmt(avg)}")
         history[ev] = rows[::-1]  # newest first
 
-    plot_progression(history, STATS / "progression.png")
+    plot_progression(history, CHARTS / "progression.png")
     (ROOT / "fast-solves").mkdir(exist_ok=True)
     page, n_fast = fast_solves_page()
     (ROOT / "fast-solves" / "README.md").write_text(page)
