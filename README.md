@@ -13,7 +13,7 @@ Personal-best averages, with the full solve list and stats behind each one. New 
 | **ao50** | **15.17** | 2026-09-25 | [details](stats/ao50/ao50_2026-09-25.md) |
 | **ao100** | **15.50** | 2026-09-25 | [details](stats/ao100/ao100_2026-09-25.md) |
 
-**[Fast solve bank →](fast-solves/README.md)** (1 solve)
+**[Fast solve bank →](reconstructions/README.md)** (1 solve)
 
 ![PB progression](stats/charts/progression.png)
 

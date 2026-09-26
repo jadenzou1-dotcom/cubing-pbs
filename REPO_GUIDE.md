@@ -14,10 +14,10 @@ A record of my 3x3 personal bests, plus the solve data behind each one, so I can
 | `records/<event>/` | **The raw data.** One `.txt` file per PB, for `single`, `ao5`, `ao12`, `ao25`, `ao50` and `ao100`. |
 | `stats/<event>/` | **The analysis.** One page per PB, named like `ao5_2026-09-25.md`, with the stats, both charts and every solve. |
 | `stats/charts/` | The chart images the pages display (GitHub pages can't hold images inline), plus `progression.png`: each event's PB over time. |
-| `fast-solves/` | A hand-picked bank of good solves with reconstructions. Not averages, so no distributions. |
-| `scripts/build.py` | Reads everything in `records/` and `fast-solves/` and regenerates all the generated files above. |
+| `reconstructions/` | A hand-picked bank of good solves with reconstructions. Not averages, so no distributions. |
+| `scripts/build.py` | Reads everything in `records/` and `reconstructions/` and regenerates all the generated files above. |
 
-The `.txt` files are the source of truth. `README.md`, everything in `stats/` and `fast-solves/README.md` are rebuilt from them by `python3 scripts/build.py`, which overwrites those files each time it runs. Changes go into the `.txt` files (or into `build.py` itself), never into the rebuilt files. `REPO_GUIDE.md` and `CLAUDE.md` aren't touched by the script.
+The `.txt` files are the source of truth. `README.md`, everything in `stats/` and `reconstructions/README.md` are rebuilt from them by `python3 scripts/build.py`, which overwrites those files each time it runs. Changes go into the `.txt` files (or into `build.py` itself), never into the rebuilt files. `REPO_GUIDE.md` and `CLAUDE.md` aren't touched by the script.
 
 ## Records
 
@@ -62,7 +62,7 @@ Both appear on every stats page, and σ / mean is also a column in the README's 
 
 ## Fast solve bank
 
-`fast-solves/` holds individual solves I want to keep, with the scramble, time, date and a reconstruction. It's not part of any average, so it has no distributions. Each solve has the full reconstruction and replay link described above. The top of the bank's page summarizes the whole bank: mean time, mean and fewest moves, mean and highest TPS, mean rotations, and average moves in the cross, per F2L pair and in the last layer.
+`reconstructions/` holds individual solves I want to keep, with the scramble, time, date and a reconstruction. It's not part of any average, so it has no distributions. Each solve has the full reconstruction and replay link described above. The top of the bank's page summarizes the whole bank: mean time, mean and fewest moves, mean and highest TPS, mean rotations, and average moves in the cross, per F2L pair and in the last layer.
 
 ## How to add a PB
 
