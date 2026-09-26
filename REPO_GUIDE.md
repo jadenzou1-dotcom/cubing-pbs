@@ -60,7 +60,7 @@ Two cautions:
 
 Both appear on every stats page, and σ / mean is also a column in the README's PB history. Over time, watching it there shows whether new PBs are also getting more consistent, or just faster.
 
-## Fast solve bank
+## Reconstructions
 
 `reconstructions/` holds individual solves I want to keep, with the scramble, time, date and a reconstruction. It's not part of any average, so it has no distributions. Each solve has the full reconstruction and replay link described above. The top of the bank's page summarizes the whole bank: mean time, mean and fewest moves, mean and highest TPS, mean rotations, and average moves in the cross, per F2L pair and in the last layer.
 

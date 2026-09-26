@@ -41,6 +41,6 @@ Optional. `>` lines directly under the numbered solve, one step per line with a 
 - No per-step tables in reconstructions; keep the one-line breakdown.
 - README history columns: Date, Time, Improvement, σ, σ / mean, Stats. No Recon column.
 - ao5 and ao12 use the number-line chart, ao25 and up the density curve (`Solves within a 1-second window`). Keep the per-second gridlines on time axes.
-- Keep the fast-solve bank free of distributions and averages.
+- Keep the reconstructions folder free of distributions and averages.
 - The repo is public; don't commit anything personal beyond cubing data.
 - Commit messages end with the `Co-Authored-By` line from the session's attribution instructions.
