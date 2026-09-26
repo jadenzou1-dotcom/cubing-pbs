@@ -1,4 +1,4 @@
-# About this repo
+# Repo guide
 
 A record of my 3x3 personal bests, plus the solve data behind each one, so I can see not only *how fast* I'm getting but *how consistent*. Every PB is kept, not just the latest, so the history shows how my averages improve over time.
 
@@ -8,16 +8,16 @@ A record of my 3x3 personal bests, plus the solve data behind each one, so I can
 
 | Path | What it is |
 |---|---|
-| [`README.md`](README.md) | My current PBs, the improvement on each, and the full PB history. Generated. |
-| `ABOUT.md` | This file. Written by hand. |
-| `CLAUDE.md` | Instructions for Claude: how to add PBs, check reconstructions and keep these docs current, so any new chat can run the workflow. Claude Code reads this file automatically. Written by hand. |
+| [`README.md`](README.md) | The front page: my current PBs, how much each one improved, and the full PB history. Rebuilt by `build.py`. |
+| `REPO_GUIDE.md` | This guide: what every folder holds, what each stat and chart means, and how reconstructions and consistency are measured. |
+| `CLAUDE.md` | Instructions for Claude: how to add PBs, check reconstructions and keep these docs current, so any new chat can run the workflow. Claude Code reads this file automatically. |
 | `records/<event>/` | **The raw data.** One `.txt` file per PB, for `single`, `ao5`, `ao12`, `ao25`, `ao50` and `ao100`. |
 | `stats/<event>/<date>/` | **Generated analysis** for each PB: stats page, two charts, and a JSON copy of the numbers. |
 | `stats/progression.png` | The PB value for each event over time. |
 | `fast-solves/` | A hand-picked bank of good solves with reconstructions. Not averages, so no distributions. |
 | `scripts/build.py` | Reads everything in `records/` and `fast-solves/` and regenerates all the generated files above. |
 
-The `.txt` files are the source of truth. Everything else can be deleted and rebuilt with `python3 scripts/build.py`, so no generated file is edited by hand.
+The `.txt` files are the source of truth. `README.md`, everything in `stats/` and `fast-solves/README.md` are rebuilt from them by `python3 scripts/build.py`, which overwrites those files each time it runs. Changes go into the `.txt` files (or into `build.py` itself), never into the rebuilt files. `REPO_GUIDE.md` and `CLAUDE.md` aren't touched by the script.
 
 ## Records
 
