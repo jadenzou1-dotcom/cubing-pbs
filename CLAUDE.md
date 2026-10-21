@@ -11,7 +11,7 @@ Jaden's 3x3 PB tracker. GitHub: jadenzou1-dotcom/cubing-pbs (public), branch `ma
 1. Save it as a new file, never overwrite an old one:
    - PB: `records/<event>/YYYY-MM-DD.txt`, with `<event>` one of `single`, `ao5`, `ao12`, `ao25`, `ao50`, `ao100`.
    - Second PB of the same event on the same day: `YYYY-MM-DD_2.txt`, then `_3`, in the order they happened.
-   - Fast single or ao5 that isn't a PB: `highlights/single/` or `highlights/ao5/`, same naming. These go in a log (`highlights/README.md`) with how far off the PB they were, plus a timeline chart per event (collapsible `<details>` sections). Any event folder works, e.g. `highlights/ao12/`. build.py warns if one actually beats the PB (then it belongs in `records/`).
+   - Fast single, ao5 or ao12 that isn't a PB: `highlights/single/`, `highlights/ao5/` or `highlights/ao12/`, same naming. `highlights/README.md` shows one collapsible table per event (Date, Time). build.py warns if one actually beats the PB (then it belongs in `records/`).
 2. Paste the csTimer export as given (header lines are skipped). If it has an `avg of N:` or `single:` line, build.py warns when its computed value differs; resolve any warning before pushing.
 3. Run `python3 scripts/build.py`, then `git add -A`, commit, and `git push`.
 4. Use the date the user gives; if unclear, ask (csTimer stores real solve dates). Today's date is not necessarily the solve's date.
@@ -41,6 +41,6 @@ Optional, on any single (PB or highlight) or solve in an average. `>` lines dire
 - No per-step tables in reconstructions; keep the one-line breakdown.
 - README history columns: Date, Time, Improvement, σ, σ / mean, Stats. No Recon column.
 - ao5 and ao12 use the number-line chart, ao25 and up the density curve (`Solves within a 1-second window`). Keep the per-second gridlines on time axes.
-- Highlights are a history log of fast singles and ao5s (replaced the old reconstructions bank); only the timeline chart there, no distributions.
+- Highlights are a history log of fast singles, ao5s and ao12s (replaced the old reconstructions bank): toggleable Date / Time tables, no charts or distributions. The user tried a timeline chart there and rejected it.
 - The repo is public; don't commit anything personal beyond cubing data.
 - Commit messages end with the `Co-Authored-By` line from the session's attribution instructions.

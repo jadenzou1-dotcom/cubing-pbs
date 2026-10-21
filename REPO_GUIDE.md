@@ -13,8 +13,8 @@ A record of my 3x3 personal bests, plus the solve data behind each one, so I can
 | `CLAUDE.md` | Instructions for Claude: how to add PBs, check reconstructions and keep these docs current, so any new chat can run the workflow. Claude Code reads this file automatically. |
 | `records/<event>/` | **The raw data.** One `.txt` file per PB, for `single`, `ao5`, `ao12`, `ao25`, `ao50` and `ao100`. |
 | `stats/<event>/` | **The analysis.** One page per PB, named like `ao5_2026-09-25.md`, with the stats, both charts and every solve. |
-| `stats/charts/` | The chart images the pages display (GitHub pages can't hold images inline), plus `progression.png` (each event's PB over time) and `highlights_<event>.png` (the highlights timelines). |
-| `highlights/` | A log of fast singles and ao5s that weren't PBs, in `highlights/single/` and `highlights/ao5/`. `highlights/README.md` is the log. |
+| `stats/charts/` | The chart images the pages display (GitHub pages can't hold images inline), plus `progression.png`: each event's PB over time. |
+| `highlights/` | A log of fast singles, ao5s and ao12s that weren't PBs, in `highlights/single/`, `highlights/ao5/` and `highlights/ao12/`. `highlights/README.md` is the log. |
 | `scripts/build.py` | Reads everything in `records/` and `highlights/` and regenerates all the generated files above. |
 
 The `.txt` files are the source of truth. `README.md`, everything in `stats/` and `highlights/README.md` are rebuilt from them by `python3 scripts/build.py`, which overwrites those files each time it runs. Changes go into the `.txt` files (or into `build.py` itself), never into the rebuilt files. `REPO_GUIDE.md` and `CLAUDE.md` aren't touched by the script.
@@ -62,13 +62,9 @@ Both appear on every stats page, and σ / mean is also a column in the README's 
 
 ## Highlights
 
-`highlights/` is a history log of fast results that weren't PBs: singles in `highlights/single/`, ao5s in `highlights/ao5/`, same file naming as `records/`. `highlights/README.md` opens with a **timeline** per event: each highlight as a blue dot by date, with the PB at the time as an orange step line, so I can see whether my good results are creeping toward (or past) the PB. Each event's chart is a collapsible section (click its name to show or hide it); singles are open by default. Adding a new folder such as `highlights/ao12/` gives it its own chart automatically. Below that, the log lists results newest first with:
+`highlights/` is a history log of fast results that weren't PBs: singles in `highlights/single/`, ao5s in `highlights/ao5/`, ao12s in `highlights/ao12/`, same file naming as `records/`. `highlights/README.md` has one collapsible table per event (click the event's name to show or hide it; singles are open by default), each listing date and time, newest first. Below that, each result has its notes, scrambles, and the reconstruction and replay link described above if I added one.
 
-- **Off PB:** how far it was from the PB at the time (the latest PB dated on or before it)
-- for ao5s, every time (trimmed ones in parentheses) and σ / mean
-- each solve's scramble, plus the reconstruction and replay link described above if I added one
-
-There are no distributions here, only the timeline. The build warns if a highlight actually beats the PB, since then it belongs in `records/`.
+There are no charts or distributions here. The build warns if a highlight actually beats the PB, since then it belongs in `records/`.
 
 ## How to add a PB
 
