@@ -1,0 +1,4 @@
+single: 12.18
+1. 12.18   U F' U F U2 F R D B' L U2 R2 D2 L U2 R B2 L2 U2 D2 R
+# Solved facing green: accidental xcross plus 2 free pairs
+# Solve 1 of the 13.29 ao5
