@@ -15,10 +15,11 @@ Fast results that weren't PBs, newest first. Click an event to show or hide it. 
 </details>
 
 <details>
-<summary><b>ao5</b> · 2</summary>
+<summary><b>ao5</b> · 3</summary>
 
 | Date | Time |
 |---|---|
+| [2026-10-30](#ao5-2026-10-30--1351) | **13.51** |
 | [2026-10-20 (#2)](#ao5-2026-10-20-2--1329) | **13.29** |
 | [2026-10-20](#ao5-2026-10-20--1324) | **13.24** |
 
@@ -65,6 +66,16 @@ U' R' U R' F R F' R // pair 4 (red-green)
 (F R U R' U' S R U R' U' f') // OLL
 U (R' U' R U D' R2 U R' U R U' R U' R2 D) U2 // PLL (Gb)
 ```
+
+### ao5 2026-10-30 — 13.51
+
+| # | Time | Scramble |
+|---|---|---|
+| 1 | **12.00** | `F2 D R2 U' B2 R2 D' B2 U' L' D R D2 F' L2 B2 R D' R2` |
+| 2 | (16.77) | `U L2 U2 F' D2 L2 B2 U2 R2 B R2 B U2 L' D2 U F' R' D2 F U2` |
+| 3 | **15.78** | `U2 R2 D' L' R2 D2 F2 L2 F2 L U2 F2 R B' L' F2 U' F' R B2` |
+| 4 | (11.56) | `F' L B2 R B' L D L U' L2 B2 L2 F2 U F2 B2 R2 D' L2 D' R'` |
+| 5 | **12.75** | `R' F B U R2 D' B' R D' L D2 R2 U L2 U' F2 D R2 B2 U` |
 
 ### ao5 2026-10-20 (#2) — 13.29
 
