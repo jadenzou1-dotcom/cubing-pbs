@@ -5,20 +5,24 @@ Fast results that weren't PBs, newest first. Click an event to show or hide it. 
 [← all records](../README.md)
 
 <details open>
-<summary><b>single</b> · 2</summary>
+<summary><b>single</b> · 3</summary>
 
 | Date | Time |
 |---|---|
+| [2026-11-04](#single-2026-11-04--1010) | **10.10** |
 | [2026-10-20](#single-2026-10-20--1218) | **12.18** |
 | [2026-09-25](#single-2026-09-25--1197) | **11.97** |
 
 </details>
 
 <details>
-<summary><b>ao5</b> · 3</summary>
+<summary><b>ao5</b> · 6</summary>
 
 | Date | Time |
 |---|---|
+| [2026-11-04 (#3)](#ao5-2026-11-04-3--1360) | **13.60** |
+| [2026-11-04 (#2)](#ao5-2026-11-04-2--1332) | **13.32** |
+| [2026-11-04](#ao5-2026-11-04--1344) | **13.44** |
 | [2026-10-30](#ao5-2026-10-30--1351) | **13.51** |
 | [2026-10-20 (#2)](#ao5-2026-10-20-2--1329) | **13.29** |
 | [2026-10-20](#ao5-2026-10-20--1324) | **13.24** |
@@ -33,6 +37,14 @@ _No ao12 highlights yet._
 </details>
 
 ## Details
+
+### single 2026-11-04 — 10.10
+
+> OLL skip
+
+**Scramble:** `F U B R2 D B2 F2 U2 L2 R2 F2 U' R2 D' B' D F2 L F' D U'`
+
+_No reconstruction yet._
 
 ### single 2026-10-20 — 12.18
 
@@ -66,6 +78,36 @@ U' R' U R' F R F' R // pair 4 (red-green)
 (F R U R' U' S R U R' U' f') // OLL
 U (R' U' R U D' R2 U R' U R U' R U' R2 D) U2 // PLL (Gb)
 ```
+
+### ao5 2026-11-04 (#3) — 13.60
+
+| # | Time | Scramble |
+|---|---|---|
+| 1 | **13.28** | `R U R2 F L' F2 R D F' L2 B U2 B' U2 L2 F U2 B' U2 L2 U'` |
+| 2 | **14.09** | `D F2 D F2 L2 D F2 L2 U' B2 L2 B2 R D R B' R2 D' B' D' U2` |
+| 3 | **13.42** | `D F' B2 D2 F2 D' L U' F' U2 D2 F2 U2 D2 R2 U2 B D2 F' D2` |
+| 4 | (11.94) | `D2 B2 U2 R2 F' L2 F2 L2 F' D2 L2 U' F D B' L' U L F D U2` |
+| 5 | (16.60) | `B2 U2 B2 R2 B2 L D2 L U2 R' F2 U B' D2 B' F' L' B F' L'` |
+
+### ao5 2026-11-04 (#2) — 13.32
+
+| # | Time | Scramble |
+|---|---|---|
+| 1 | **14.33** | `D2 F2 L2 F' R F2 L2 U' L' D2 R2 U2 L D2 F2 L' U2 F2 R' D'` |
+| 2 | (24.62) | `D' F2 U' R2 B2 U' R2 D B2 R2 U R' F2 U2 F2 L U' L' F L2` |
+| 3 | **12.15** | `B2 R' B2 L' F2 R B2 F2 U2 L' U2 B' D2 U B L' D U' F2 U` |
+| 4 | **13.49** | `L' F U' B' L2 D2 L' D' F B2 L' B2 D2 R U2 L2 U2 D2 B2` |
+| 5 | (10.58) | `U R' L2 U2 B' D2 B L2 F' U2 F2 R2 D L U F' R F L2` |
+
+### ao5 2026-11-04 — 13.44
+
+| # | Time | Scramble |
+|---|---|---|
+| 1 | **13.85** | `D' L2 F2 R2 F2 D B2 F2 U L2 U' F D R B' F' L2 D F2` |
+| 2 | **12.94** | `D2 L2 U' D' B' L U L2 B2 L2 U2 F L2 D2 R2 F' R2 L B` |
+| 3 | (14.83) | `D R F U2 B L2 R2 B' U2 R2 B' F' L2 D' F D F L B` |
+| 4 | (12.79) | `L2 U2 L' B2 R F2 U2 L B2 D2 L D2 F' D' L R F2 U F2 L2 F'` |
+| 5 | **13.54** | `R F' L2 U' R2 L' F R' F B2 D' R2 D2 F2 R2 U2 B2 D R2 D'` |
 
 ### ao5 2026-10-30 — 13.51
 
