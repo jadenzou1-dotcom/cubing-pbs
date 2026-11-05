@@ -5,10 +5,11 @@ Fast results that weren't PBs, newest first. Click an event to show or hide it. 
 [← all records](../README.md)
 
 <details open>
-<summary><b>single</b> · 3</summary>
+<summary><b>single</b> · 4</summary>
 
 | Date | Time |
 |---|---|
+| [2026-11-04 (#2)](#single-2026-11-04-2--1083) | **10.83** |
 | [2026-11-04](#single-2026-11-04--1010) | **10.10** |
 | [2026-10-20](#single-2026-10-20--1218) | **12.18** |
 | [2026-09-25](#single-2026-09-25--1197) | **11.97** |
@@ -37,6 +38,12 @@ _No ao12 highlights yet._
 </details>
 
 ## Details
+
+### single 2026-11-04 (#2) — 10.83
+
+**Scramble:** `D' R' L2 D' F2 R2 B2 R2 U' R2 B2 D R2 F' L' U' B L B2 D2`
+
+_No reconstruction yet._
 
 ### single 2026-11-04 — 10.10
 
