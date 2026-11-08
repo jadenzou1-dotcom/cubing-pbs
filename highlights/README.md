@@ -5,10 +5,12 @@ Fast results that weren't PBs, newest first. Click an event to show or hide it. 
 [← all records](../README.md)
 
 <details open>
-<summary><b>single</b> · 4</summary>
+<summary><b>single</b> · 6</summary>
 
 | Date | Time |
 |---|---|
+| [2026-11-08 (#2)](#single-2026-11-08-2--1043) | **10.43** |
+| [2026-11-08](#single-2026-11-08--1038) | **10.38** |
 | [2026-11-04 (#2)](#single-2026-11-04-2--1083) | **10.83** |
 | [2026-11-04](#single-2026-11-04--1010) | **10.10** |
 | [2026-10-20](#single-2026-10-20--1218) | **12.18** |
@@ -17,10 +19,11 @@ Fast results that weren't PBs, newest first. Click an event to show or hide it. 
 </details>
 
 <details>
-<summary><b>ao5</b> · 6</summary>
+<summary><b>ao5</b> · 7</summary>
 
 | Date | Time |
 |---|---|
+| [2026-11-07](#ao5-2026-11-07--1287) | **12.87** |
 | [2026-11-04 (#3)](#ao5-2026-11-04-3--1360) | **13.60** |
 | [2026-11-04 (#2)](#ao5-2026-11-04-2--1332) | **13.32** |
 | [2026-11-04](#ao5-2026-11-04--1344) | **13.44** |
@@ -38,6 +41,18 @@ _No ao12 highlights yet._
 </details>
 
 ## Details
+
+### single 2026-11-08 (#2) — 10.43
+
+**Scramble:** `D' R' F2 U' L2 F' R2 B R F2 L2 F2 B' R2 L2 F' L2 D2 F D2`
+
+_No reconstruction yet._
+
+### single 2026-11-08 — 10.38
+
+**Scramble:** `L D' R2 B' D2 U2 R2 F D2 L2 U2 B2 L' D' R2 B' L' R2 B2`
+
+_No reconstruction yet._
 
 ### single 2026-11-04 (#2) — 10.83
 
@@ -85,6 +100,16 @@ U' R' U R' F R F' R // pair 4 (red-green)
 (F R U R' U' S R U R' U' f') // OLL
 U (R' U' R U D' R2 U R' U R U' R U' R2 D) U2 // PLL (Gb)
 ```
+
+### ao5 2026-11-07 — 12.87
+
+| # | Time | Scramble |
+|---|---|---|
+| 1 | **12.51** | `F2 L2 D' B2 D2 L2 R2 F2 U' F2 U' R F' L U B' R2 F R' D2` |
+| 2 | (11.76) | `U R2 U2 F2 L2 R2 F2 D L2 D' F' R' F2 D' B' U F2 L2 B` |
+| 3 | **13.74** | `U B R2 D' F2 U' L2 F2 R2 U2 R2 U L2 U' B' D R2 U2 F2 D2 R` |
+| 4 | **12.35** | `D' R U2 R' F2 R' F2 U2 F2 R2 D2 F2 R' U' L2 B' L2 B' F' U' F` |
+| 5 | (15.39) | `R2 F' L' F' L2 U' F2 U2 F' R' L2 B2 R L2 U2 R' D2 F2 U2` |
 
 ### ao5 2026-11-04 (#3) — 13.60
 
