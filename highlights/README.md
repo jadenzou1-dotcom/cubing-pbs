@@ -5,10 +5,11 @@ Fast results that weren't PBs, newest first. Click an event to show or hide it. 
 [← all records](../README.md)
 
 <details open>
-<summary><b>single</b> · 7</summary>
+<summary><b>single</b> · 8</summary>
 
 | Date | Time |
 |---|---|
+| [2026-11-12](#single-2026-11-12--1045) | **10.45** |
 | [2026-11-09](#single-2026-11-09--975) | **9.75** |
 | [2026-11-08 (#2)](#single-2026-11-08-2--1043) | **10.43** |
 | [2026-11-08](#single-2026-11-08--1038) | **10.38** |
@@ -35,13 +36,21 @@ Fast results that weren't PBs, newest first. Click an event to show or hide it. 
 </details>
 
 <details>
-<summary><b>ao12</b> · 0</summary>
+<summary><b>ao12</b> · 1</summary>
 
-_No ao12 highlights yet._
+| Date | Time |
+|---|---|
+| [2026-11-12](#ao12-2026-11-12--1353) | **13.53** |
 
 </details>
 
 ## Details
+
+### single 2026-11-12 — 10.45
+
+**Scramble:** `R' F2 U L2 D' F2 D L2 U F2 D' R2 U' B F' D' L' D2 U2 R2 F'`
+
+_No reconstruction yet._
 
 ### single 2026-11-09 — 9.75
 
@@ -177,3 +186,20 @@ U (R' U' R U D' R2 U R' U R U' R U' R2 D) U2 // PLL (Gb)
 | 3 | (12.24) | `B' D2 B2 U2 L2 B D2 B L2 R2 F R2 U L' F R' F D B' F' L` |
 | 4 | (19.32) | `B' L2 B' F2 L2 F' L2 R2 U2 L2 R2 D' R U' F2 R2 B' F' L' F2` |
 | 5 | **12.33** | `F2 U L' D2 R' U2 R' B2 R' F2 R' B2 D2 B2 F L2 R2 U' R' D' F'` |
+
+### ao12 2026-11-12 — 13.53
+
+| # | Time | Scramble |
+|---|---|---|
+| 1 | (15.98) | `B2 R B D R2 B U2 L' B' F2 D' L2 U B2 L2 U' B2 D' F2 U F'` |
+| 2 | **15.53** | `L' F D L' B' R U F' D L2 F2 B2 U' R2 D2 F2 R2 U2 B' D2` |
+| 3 | **14.47** | `F L' U R2 B2 F2 U' L2 D' U2 R2 U B L' F R2 B2 D B U'` |
+| 4 | **13.84** | `U2 R' U2 R2 B L2 B' U2 B D2 B' F D F' R B2 L R` |
+| 5 | **11.90** | `D' R2 B2 D2 B2 D2 L2 F2 L' R2 U2 R F2 B' U L2 D' B' D2 L' F2` |
+| 6 | **14.82** | `L F2 L2 U2 B R2 B D2 B' U2 L2 B D2 L' U2 B' D2 L' D' F D'` |
+| 7 | **13.68** | `B2 R' F' D2 R2 F' L2 R2 B' U2 L2 B R2 U2 R D L2 D' B2 R2 B` |
+| 8 | **14.91** | `U2 B R' U F D R' D2 L' U L2 B2 L2 U2 F2 U B2 D' R2 F2` |
+| 9 | **12.18** | `R' L U2 B U2 F R L2 U F2 L2 U D R2 F2 D R2 D F2 R'` |
+| 10 | **11.57** | `D' U2 F2 L B2 R2 U2 R B2 R B2 D' F' L' B R U' F' U R2` |
+| 11 | (11.08) | `L' R2 D2 R2 D' R2 U L2 D' U L2 R U2 B U' B L2 D2 L' R2` |
+| 12 | **12.35** | `U2 B2 L U2 L' D2 F2 R2 D2 R D2 L' F D2 U' L' D U2 B F' D'` |
