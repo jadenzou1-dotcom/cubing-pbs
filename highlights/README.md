@@ -5,10 +5,11 @@ Fast results that weren't PBs, newest first. Click an event to show or hide it. 
 [← all records](../README.md)
 
 <details open>
-<summary><b>single</b> · 9</summary>
+<summary><b>single</b> · 10</summary>
 
 | Date | Time |
 |---|---|
+| [2026-11-16](#single-2026-11-16--979) | **9.79** |
 | [2026-11-12 (#2)](#single-2026-11-12-2--1027) | **10.27** |
 | [2026-11-12](#single-2026-11-12--1045) | **10.45** |
 | [2026-11-09](#single-2026-11-09--975) | **9.75** |
@@ -22,10 +23,11 @@ Fast results that weren't PBs, newest first. Click an event to show or hide it. 
 </details>
 
 <details>
-<summary><b>ao5</b> · 7</summary>
+<summary><b>ao5</b> · 8</summary>
 
 | Date | Time |
 |---|---|
+| [2026-11-16](#ao5-2026-11-16--1211) | **12.11** |
 | [2026-11-07](#ao5-2026-11-07--1287) | **12.87** |
 | [2026-11-04 (#3)](#ao5-2026-11-04-3--1360) | **13.60** |
 | [2026-11-04 (#2)](#ao5-2026-11-04-2--1332) | **13.32** |
@@ -46,6 +48,14 @@ Fast results that weren't PBs, newest first. Click an event to show or hide it. 
 </details>
 
 ## Details
+
+### single 2026-11-16 — 9.79
+
+> 0.04 off the 9.75 PB single
+
+**Scramble:** `D L B2 L2 D2 B L2 F2 D2 U2 B' L2 D2 L' U B' R F2 D F2`
+
+_No reconstruction yet._
 
 ### single 2026-11-12 (#2) — 10.27
 
@@ -123,6 +133,16 @@ U' R' U R' F R F' R // pair 4 (red-green)
 (F R U R' U' S R U R' U' f') // OLL
 U (R' U' R U D' R2 U R' U R U' R U' R2 D) U2 // PLL (Gb)
 ```
+
+### ao5 2026-11-16 — 12.11
+
+| # | Time | Scramble |
+|---|---|---|
+| 1 | (10.76) | `R2 L U' D B U' F L' D2 B' L2 B D2 B' R2 F U2 F2` |
+| 2 | **13.22** | `U L' D2 B L2 F R2 B D2 R2 F' L2 B2 D F R2 B' U2 L' B2 F'` |
+| 3 | **11.13** | `R2 D2 L2 R2 B2 F' U2 L2 B2 F R B' R2 B' U F2 L2 R B2 F2` |
+| 4 | (14.02) | `U' R U' F L U2 L' D' B2 U' F2 U2 F2 R2 U R2 D B2 L B` |
+| 5 | **11.97** | `U2 F2 R2 U L2 B2 D' L2 U' R2 D L2 B' F2 R B2 D2 R' D' U` |
 
 ### ao5 2026-11-07 — 12.87
 
