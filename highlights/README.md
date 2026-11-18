@@ -5,10 +5,11 @@ Fast results that weren't PBs, newest first. Click an event to show or hide it. 
 [← all records](../README.md)
 
 <details open>
-<summary><b>single</b> · 12</summary>
+<summary><b>single</b> · 13</summary>
 
 | Date | Time |
 |---|---|
+| [2026-11-18](#single-2026-11-18--1046) | **10.46** |
 | [2026-11-17 (#2)](#single-2026-11-17-2--1075) | **10.75** |
 | [2026-11-17](#single-2026-11-17--1036) | **10.36** |
 | [2026-11-16](#single-2026-11-16--979) | **9.79** |
@@ -50,6 +51,12 @@ Fast results that weren't PBs, newest first. Click an event to show or hide it. 
 </details>
 
 ## Details
+
+### single 2026-11-18 — 10.46
+
+**Scramble:** `D F' U B2 U R2 D' L2 F2 U B2 D2 B2 F2 R U B R D2 R U2`
+
+_No reconstruction yet._
 
 ### single 2026-11-17 (#2) — 10.75
 
