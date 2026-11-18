@@ -5,10 +5,12 @@ Fast results that weren't PBs, newest first. Click an event to show or hide it. 
 [← all records](../README.md)
 
 <details open>
-<summary><b>single</b> · 10</summary>
+<summary><b>single</b> · 12</summary>
 
 | Date | Time |
 |---|---|
+| [2026-11-17 (#2)](#single-2026-11-17-2--1075) | **10.75** |
+| [2026-11-17](#single-2026-11-17--1036) | **10.36** |
 | [2026-11-16](#single-2026-11-16--979) | **9.79** |
 | [2026-11-12 (#2)](#single-2026-11-12-2--1027) | **10.27** |
 | [2026-11-12](#single-2026-11-12--1045) | **10.45** |
@@ -48,6 +50,20 @@ Fast results that weren't PBs, newest first. Click an event to show or hide it. 
 </details>
 
 ## Details
+
+### single 2026-11-17 (#2) — 10.75
+
+**Scramble:** `R D2 F D2 U2 F R2 B L2 F' D2 R2 F' U F D2 B' F2 R' B R'`
+
+_No reconstruction yet._
+
+### single 2026-11-17 — 10.36
+
+> Solve 12 of the 13.18 ao12 PB
+
+**Scramble:** `B R' B L' U2 R' L2 U' B' L2 U' F2 R2 D2 B2 U' B2 D' L2 D'`
+
+_No reconstruction yet._
 
 ### single 2026-11-16 — 9.79
 

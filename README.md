@@ -8,12 +8,12 @@ Personal-best averages, with the full solve list and stats behind each one. New 
 |---|---|---|---|
 | **single** | **9.75** | 2026-11-08 | [details](stats/single/single_2026-11-08.md) |
 | **ao5** | **12.03** | 2026-11-12 (#2) | [details](stats/ao5/ao5_2026-11-12_2.md) |
-| **ao12** | **13.24** | 2026-11-12 | [details](stats/ao12/ao12_2026-11-12.md) |
+| **ao12** | **13.18** | 2026-11-17 | [details](stats/ao12/ao12_2026-11-17.md) |
 | **ao25** | **13.85** | 2026-11-11 | [details](stats/ao25/ao25_2026-11-11.md) |
 | **ao50** | **14.29** | 2026-11-11 | [details](stats/ao50/ao50_2026-11-11.md) |
 | **ao100** | **14.54** | 2026-11-11 | [details](stats/ao100/ao100_2026-11-11.md) |
 
-**[Highlights →](highlights/README.md)** (10 singles, 8 ao5s, 1 ao12)
+**[Highlights →](highlights/README.md)** (12 singles, 8 ao5s, 1 ao12)
 
 ![PB progression](stats/charts/progression.png)
 
@@ -46,7 +46,8 @@ Newest first. Each new PB pushes the older ones down.
 
 | Date | Time | Improvement | σ | σ / mean | Stats |
 |---|---|---|---|---|---|
-| 2026-11-12 | **13.24** | −0.29 | 1.48 | 11.2% | [details](stats/ao12/ao12_2026-11-12.md) |
+| 2026-11-17 | **13.18** | −0.06 | 1.67 | 12.6% | [details](stats/ao12/ao12_2026-11-17.md) |
+| 2026-11-12 | 13.24 | −0.29 | 1.48 | 11.2% | [details](stats/ao12/ao12_2026-11-12.md) |
 | 2026-11-11 | 13.53 | −0.22 | 1.47 | 10.7% | [details](stats/ao12/ao12_2026-11-11.md) |
 | 2026-11-08 | 13.75 | −0.09 | 2.27 | 16.5% | [details](stats/ao12/ao12_2026-11-08.md) |
 | 2026-11-07 (#2) | 13.84 | −0.25 | 1.40 | 10.1% | [details](stats/ao12/ao12_2026-11-07_2.md) |
