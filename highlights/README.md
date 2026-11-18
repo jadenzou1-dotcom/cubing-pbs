@@ -60,6 +60,7 @@ _No reconstruction yet._
 ### single 2026-11-17 — 10.36
 
 > Solve 12 of the 13.18 ao12 PB
+> Also solve 7 of the 13.16 ao12 PB (2026-11-18)
 
 **Scramble:** `B R' B L' U2 R' L2 U' B' L2 U' F2 R2 D2 B2 U' B2 D' L2 D'`
 
